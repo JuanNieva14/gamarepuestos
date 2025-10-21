@@ -2,9 +2,9 @@ import React from "react";
 
 export default function Categorias() {
   return (
-    <div>
+    <div className="text-light">
       <h2>Gestión de Categorías</h2>
-      <p>Desde aquí podrás crear, editar o eliminar categorías de productos.</p>
+      <p>Administra las categorías de productos para organizar tu inventario eficientemente.</p>
     </div>
   );
 }

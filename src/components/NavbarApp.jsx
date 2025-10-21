@@ -1,6 +1,8 @@
 import React from "react";
 import { Navbar, Nav, NavDropdown, Container } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import "./NavbarApp.css";
+
 
 export default function NavbarApp() {
   const navigate = useNavigate();
@@ -10,7 +12,8 @@ export default function NavbarApp() {
   };
 
   return (
-    <Navbar bg="light" expand="lg" className="shadow-sm">
+
+    <Navbar expand="lg" className="navbar-dark-custom shadow-sm" variant="dark">
       <Container>
         <Navbar.Brand onClick={() => handleNavigation("/")} style={{ cursor: "pointer" }}>
           Gama Repuestos Quibdó
@@ -25,15 +28,15 @@ export default function NavbarApp() {
             {/* BÁSICO */}
             <NavDropdown title="Básico" id="basic-nav-dropdown">
               <NavDropdown.Item onClick={() => handleNavigation("/categorias")}>
-                Categoría de respuesta
+                Categoría de repuestos
               </NavDropdown.Item>
               <NavDropdown.Item onClick={() => handleNavigation("/tipos")}>
-                Tipos de respuestas
+                Tipos de repuestos
               </NavDropdown.Item>
               <NavDropdown.Item onClick={() => handleNavigation("/personas")}>
                 Personas
               </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/formas-pago")}>
+              <NavDropdown.Item onClick={() => handleNavigation("/formaspago")}>
                 Forma de pago
               </NavDropdown.Item>
               <NavDropdown.Item onClick={() => handleNavigation("/estados")}>
@@ -49,20 +52,20 @@ export default function NavbarApp() {
               <NavDropdown.Item onClick={() => handleNavigation("/inventario")}>
                 Inventario
               </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/registro-productos")}>
+              <NavDropdown.Item onClick={() => handleNavigation("/registroproductos")}>
                 Registro de productos
               </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/venta-productos")}>
+              <NavDropdown.Item onClick={() => handleNavigation("/ventaproductos")}>
                 Venta de productos
               </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/actualizar-stock")}>
+              <NavDropdown.Item onClick={() => handleNavigation("/actualizarstock")}>
                 Actualizar stock
               </NavDropdown.Item>
               <NavDropdown.Divider />
-              <NavDropdown.Item onClick={() => handleNavigation("/crear-cotizacion")}>
+              <NavDropdown.Item onClick={() => handleNavigation("/crearcotizacion")}>
                 Crear cotización
               </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/imprimir-factura")}>
+              <NavDropdown.Item onClick={() => handleNavigation("/imprimirfactura")}>
                 Imprimir factura
               </NavDropdown.Item>
             </NavDropdown>
@@ -78,10 +81,10 @@ export default function NavbarApp() {
               <NavDropdown.Item onClick={() => handleNavigation("/proveedores")}>
                 Proveedores
               </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/cotizaciones-realizadas")}>
+              <NavDropdown.Item onClick={() => handleNavigation("/cotizacionesrealizadas")}>
                 Cotizaciones realizadas
               </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/facturas-emitidas")}>
+              <NavDropdown.Item onClick={() => handleNavigation("/facturasemitidas")}>
                 Facturas emitidas
               </NavDropdown.Item>
             </NavDropdown>
@@ -94,7 +97,7 @@ export default function NavbarApp() {
               <NavDropdown.Item onClick={() => handleNavigation("/cotizaciones")}>
                 Cotizaciones
               </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/pedidos-proveedores")}>
+              <NavDropdown.Item onClick={() => handleNavigation("/pedidosproveedores")}>
                 Pedidos a proveedores
               </NavDropdown.Item>
               <NavDropdown.Item onClick={() => handleNavigation("/comprobantes")}>
@@ -104,35 +107,35 @@ export default function NavbarApp() {
 
             {/* REPORTES */}
             <NavDropdown title="Reportes" id="reportes-nav-dropdown">
-              <NavDropdown.Item onClick={() => handleNavigation("/ventas-por-periodo")}>
+              <NavDropdown.Item onClick={() => handleNavigation("/ventasperiodo")}>
                 Ventas por día/semana/mes
               </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/inventario-reporte")}>
+              <NavDropdown.Item onClick={() => handleNavigation("/inventarioreporte")}>
                 Inventario
               </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/compras-proveedores")}>
+              <NavDropdown.Item onClick={() => handleNavigation("/comprasproveedores")}>
                 Compras a proveedores
               </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/facturacion-periodo")}>
+              <NavDropdown.Item onClick={() => handleNavigation("/facturacionperiodo")}>
                 Facturación por periodo
               </NavDropdown.Item>
             </NavDropdown>
 
             {/* ESTADÍSTICAS */}
             <NavDropdown title="Estadísticas" id="estadisticas-nav-dropdown">
-              <NavDropdown.Item onClick={() => handleNavigation("/productos-mas-vendidos")}>
+              <NavDropdown.Item onClick={() => handleNavigation("/productosmasvendidos")}>
                 Productos más vendidos
               </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/clientes-destacados")}>
+              <NavDropdown.Item onClick={() => handleNavigation("/clientesdestacados")}>
                 Clientes destacados
               </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/proveedores-frecuentes")}>
+              <NavDropdown.Item onClick={() => handleNavigation("/proveedoresfrecuentes")}>
                 Proveedores frecuentes
               </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/graficas-ventas")}>
+              <NavDropdown.Item onClick={() => handleNavigation("/graficasventas")}>
                 Gráficas comparativas de ventas
               </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/proyeccion-demanda")}>
+              <NavDropdown.Item onClick={() => handleNavigation("/proyecciondemanda")}>
                 Proyección de demanda
               </NavDropdown.Item>
             </NavDropdown>
@@ -145,14 +148,14 @@ export default function NavbarApp() {
               <NavDropdown.Item onClick={() => handleNavigation("/permisos")}>
                 Permisos por rol
               </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/configuracion-empresa")}>
+              <NavDropdown.Item onClick={() => handleNavigation("/configuracionempresa")}>
                 Configuración de la empresa
               </NavDropdown.Item>
             </NavDropdown>
 
             {/* AYUDA */}
             <NavDropdown title="Ayuda" id="ayuda-nav-dropdown">
-              <NavDropdown.Item onClick={() => handleNavigation("/manual-usuario")}>
+              <NavDropdown.Item onClick={() => handleNavigation("/manualusuario")}>
                 Manual de usuario
               </NavDropdown.Item>
               <NavDropdown.Item onClick={() => handleNavigation("/tutoriales")}>
