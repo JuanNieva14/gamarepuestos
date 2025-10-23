@@ -1,0 +1,71 @@
+.forgot-container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #000;
+}
+
+/* Panel izquierdo */
+.forgot-left {
+  flex: 1;
+  background: linear-gradient(180deg, #7a0000 0%, #000 100%);
+  padding: 40px;
+  border-right: 2px solid #7a0000;
+}
+
+.titulo {
+  font-size: 2rem;
+  color: #fff;
+}
+
+.marca {
+  color: #ff2e2e;
+  font-weight: 700;
+  font-size: 2rem;
+}
+
+.slogan {
+  color: #ddd;
+  font-style: italic;
+  margin-top: 10px;
+}
+
+.forgot-logo {
+  width: 150px;
+  filter: drop-shadow(0px 0px 6px red);
+}
+
+/* Panel derecho */
+.forgot-right {
+  flex: 1;
+  background-color: #111;
+}
+
+.forgot-card {
+  width: 90%;
+  max-width: 400px;
+  background-color: #000;
+  border: 1px solid #7a0000;
+  color: #fff;
+}
+
+.forgot-card .form-control {
+  background-color: #111;
+  border: 1px solid #7a0000;
+  color: #fff;
+}
+
+.forgot-card .form-control:focus {
+  border-color: #ff2e2e;
+  box-shadow: 0 0 5px #ff2e2e;
+}
+
+.btn-danger {
+  background-color: #7a0000 !important;
+  border-color: #7a0000 !important;
+}
+
+.btn-danger:hover {
+  background-color: #a80000 !important;
+  border-color: #a80000 !important;
+}

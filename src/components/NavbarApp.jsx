@@ -61,12 +61,8 @@ export default function NavbarApp() {
               <NavDropdown.Item onClick={() => handleNavigation("/actualizarstock")}>
                 Actualizar stock
               </NavDropdown.Item>
-              <NavDropdown.Divider />
               <NavDropdown.Item onClick={() => handleNavigation("/crearcotizacion")}>
                 Crear cotización
-              </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/imprimirfactura")}>
-                Imprimir factura
               </NavDropdown.Item>
             </NavDropdown>
 
@@ -167,7 +163,7 @@ export default function NavbarApp() {
             </NavDropdown>
 
             {/* CERRAR SESIÓN */}
-            <Nav.Link onClick={() => handleNavigation("/logout")}>Cerrar sesión</Nav.Link>
+            <Nav.Link onClick={() => handleNavigation("/login")}>Cerrar sesión</Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>

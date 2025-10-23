@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
+import ProtectedRoute from "./components/Proteccion"; // ✅ ruta protegida
 
 // Páginas
 import Inicio from "./pages/Inicio";
@@ -18,7 +19,6 @@ import Inventario from "./pages/Inventario";
 import VentaProductos from "./pages/VentaProductos";
 import ActualizarStock from "./pages/ActualizarStock";
 import CrearCotizacion from "./pages/CrearCotizacion";
-import ImprimirFactura from "./pages/ImprimirFactura";
 import Clientes from "./pages/Clientes";
 import Proveedores from "./pages/Proveedores";
 import CotizacionesRealizadas from "./pages/CotizacionesRealizadas";
@@ -40,68 +40,397 @@ import Usuarios from "./pages/Usuarios";
 import Permisos from "./pages/Permisos";
 import ConfiguracionEmpresa from "./pages/ConfiguracionEmpresa";
 import Tutoriales from "./pages/Tutoriales";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import RecuperarContraseña from "./pages/RecuperarContraseña";
 
 export default function App() {
   return (
     <Router>
-      <Layout>
-        <Routes>
-{/* INICIO */}
-          <Route index element={<Inicio />} />
+      <Routes>
+        {/* ✅ RUTAS PÚBLICAS */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/recuperarcontraseña" element={<RecuperarContraseña />} />
 
-          {/* BÁSICO */}
-          <Route path="categorias" element={<Categorias />} />
-          <Route path="tipos" element={<Tipos />} />
-          <Route path="personas" element={<Personas />} />
-          <Route path="formaspago" element={<FormasPago />} />
-          <Route path="estados" element={<Estados />} />
+        {/* 🔒 RUTAS PROTEGIDAS */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Inicio />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
-          {/* GESTIÓN */}
-          <Route path="pedidos" element={<Pedidos />} />
-          <Route path="inventario" element={<Inventario />} />
-          <Route path="registroproductos" element={<RegistroProductos />} />
-          <Route path="ventaproductos" element={<VentaProductos />} />
-          <Route path="actualizarstock" element={<ActualizarStock />} />
-          <Route path="crearcotizacion" element={<CrearCotizacion />} />
-          <Route path="imprimirfactura" element={<ImprimirFactura />} />
+        {/* BÁSICO */}
+        <Route
+          path="/categorias"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Categorias />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tipos"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Tipos />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/personas"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Personas />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/formaspago"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <FormasPago />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/estados"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Estados />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
-          {/* CONSULTAS */}
-          <Route path="productos" element={<Productos />} />
-          <Route path="clientes" element={<Clientes />} />
-          <Route path="proveedores" element={<Proveedores />} />
-          <Route path="cotizacionesrealizadas" element={<CotizacionesRealizadas />} />
-          <Route path="facturasemitidas" element={<FacturasEmitidas />} />
+        {/* GESTIÓN */}
+        <Route
+          path="/pedidos"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Pedidos />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/inventario"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Inventario />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/registroproductos"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <RegistroProductos />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ventaproductos"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <VentaProductos />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/actualizarstock"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ActualizarStock />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/crearcotizacion"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <CrearCotizacion />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
-          {/* DOCUMENTOS */}
-          <Route path="facturas" element={<Facturas />} />
-          <Route path="cotizaciones" element={<Cotizaciones />} />
-          <Route path="pedidosproveedores" element={<PedidosProveedores />} />
-          <Route path="comprobantes" element={<Comprobantes />} />
+        {/* CONSULTAS */}
+        <Route
+          path="/productos"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Productos />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/clientes"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Clientes />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/proveedores"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Proveedores />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cotizacionesrealizadas"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <CotizacionesRealizadas />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/facturasemitidas"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <FacturasEmitidas />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
-          {/* REPORTES */}
-          <Route path="ventasperiodo" element={<VentasPeriodo />} />
-          <Route path="inventarioreporte" element={<InventarioReporte />} />
-          <Route path="comprasproveedores" element={<ComprasProveedores />} />
-          <Route path="facturacionperiodo" element={<FacturacionPeriodo />} />
+        {/* DOCUMENTOS */}
+        <Route
+          path="/facturas"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Facturas />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cotizaciones"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Cotizaciones />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pedidosproveedores"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <PedidosProveedores />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/comprobantes"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Comprobantes />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
-          {/* ESTADÍSTICAS */}
-          <Route path="productosmasvendidos" element={<ProductosMasVendidos />} />
-          <Route path="clientesdestacados" element={<ClientesDestacados />} />
-          <Route path="proveedoresfrecuentes" element={<ProveedoresFrecuentes />} />
-          <Route path="graficasventas" element={<GraficasVentas />} />
-          <Route path="proyecciondemanda" element={<ProyeccionDemanda />} />
+        {/* REPORTES */}
+        <Route
+          path="/ventasperiodo"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <VentasPeriodo />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/inventarioreporte"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <InventarioReporte />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/comprasproveedores"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ComprasProveedores />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/facturacionperiodo"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <FacturacionPeriodo />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
-          {/* ADMINISTRACIÓN */}
-          <Route path="usuarios" element={<Usuarios />} />
-          <Route path="permisos" element={<Permisos />} />
-          <Route path="configuracionempresa" element={<ConfiguracionEmpresa />} />
+        {/* ESTADÍSTICAS */}
+        <Route
+          path="/productosmasvendidos"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ProductosMasVendidos />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/clientesdestacados"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ClientesDestacados />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/proveedoresfrecuentes"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ProveedoresFrecuentes />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/graficasventas"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <GraficasVentas />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/proyecciondemanda"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ProyeccionDemanda />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
-          {/* AYUDA */}
-          <Route path="manualusuario" element={<ManualUsuario />} />
-          <Route path="tutoriales" element={<Tutoriales />} />
-          <Route path="acerca" element={<Acerca />} />
-        </Routes>
-      </Layout>
+        {/* ADMINISTRACIÓN */}
+        <Route
+          path="/usuarios"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Usuarios />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/permisos"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Permisos />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/configuracionempresa"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ConfiguracionEmpresa />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* AYUDA */}
+        <Route
+          path="/manualusuario"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ManualUsuario />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tutoriales"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Tutoriales />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/acerca"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Acerca />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
     </Router>
   );
 }
