@@ -1,71 +1,62 @@
 .register-container {
   display: flex;
   height: 100vh;
-  overflow: hidden;
-  background-color: #000;
+  background-color: #111;
+  color: #fff;
 }
 
-/* Panel izquierdo */
+/* Panel Izquierdo */
 .register-left {
   flex: 1;
-  background: linear-gradient(180deg, #7a0000 0%, #000 100%);
+  background: linear-gradient(180deg, #6b0000, #1a0000);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
   padding: 40px;
-  border-right: 2px solid #7a0000;
+  color: white;
 }
 
-.titulo {
+.register-left h2 {
   font-size: 2.2rem;
-  color: #fff;
+  font-weight: bold;
 }
 
-.marca {
-  color: #ff2e2e;
-  font-weight: 700;
-  font-size: 2rem;
+.register-left span {
+  color: #ff4d4d;
 }
 
-.slogan {
-  color: #ddd;
-  font-style: italic;
+.register-left p {
   margin-top: 10px;
+  font-style: italic;
+  color: #d6d6d6;
 }
 
-.register-logo {
-  width: 150px;
-  filter: drop-shadow(0px 0px 6px red);
+.logo-section {
+  margin-top: 40px;
 }
 
-/* Panel derecho */
+.logo-img {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 8px;
+}
+
+/* Panel Derecho */
 .register-right {
   flex: 1;
-  background-color: #111;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #0d0d0d;
 }
 
-.register-card {
-  width: 90%;
-  max-width: 500px;
-  background-color: #000;
-  border: 1px solid #7a0000;
-  color: #fff;
+.card {
+  border-radius: 10px;
+  background-color: #fff;
 }
 
-.register-card .form-control {
-  background-color: #111;
-  border: 1px solid #7a0000;
-  color: #fff;
-}
-
-.register-card .form-control:focus {
-  border-color: #ff2e2e;
-  box-shadow: 0 0 5px #ff2e2e;
-}
-
-.btn-danger {
-  background-color: #7a0000 !important;
-  border-color: #7a0000 !important;
-}
-
-.btn-danger:hover {
-  background-color: #a80000 !important;
-  border-color: #a80000 !important;
+a {
+  text-decoration: none;
 }

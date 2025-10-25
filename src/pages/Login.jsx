@@ -1,69 +1,65 @@
 import React, { useState } from "react";
-import { Form, Button, Card, Alert, Spinner } from "react-bootstrap";
+import { Form, Button, Card, Spinner, Alert } from "react-bootstrap";
 import { useNavigate, Link } from "react-router-dom";
-import "./Login.css";
+import { loginUsuario } from "../services/login";
+import "./Login.css"; // 🔹 Importa los estilos personalizados
 
 export default function Login() {
-  const [formData, setFormData] = useState({ email: "", password: "" });
-  const [mensaje, setMensaje] = useState(null);
-  const [cargando, setCargando] = useState(false); // ✅ estado del spinner
   const navigate = useNavigate();
+  const [formData, setFormData] = useState({ usuario: "", contrasena: "" });
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setCargando(true); // ✅ muestra el spinner
-    setMensaje(null);
+    setError("");
+    setCargando(true);
 
-    setTimeout(() => {
-      if (formData.email === "admin@gama.com" && formData.password === "1234") {
-        localStorage.setItem("isLoggedIn", "true"); // guarda sesión
-        setMensaje("✅ Inicio de sesión exitoso");
-        setTimeout(() => navigate("/"), 1200);
-      } else {
-        setMensaje("❌ Credenciales incorrectas");
-      }
-      setCargando(false); // ✅ oculta el spinner
-    }, 1500); // simula una espera de red
+    try {
+      const respuesta = await loginUsuario(formData);
+
+      // ✅ Guardar usuario en localStorage (para ProtectedRoute)
+      localStorage.setItem("usuario", JSON.stringify(respuesta.usuario));
+
+      // ✅ Redirigir a la página principal
+      navigate("/inicio");
+    } catch (err) {
+      console.error("Error de login:", err);
+      setError("Usuario o contraseña incorrectos");
+    } finally {
+      setCargando(false);
+    }
   };
 
   return (
     <div className="login-container">
-      {/* Panel izquierdo */}
-      <div className="login-left text-center text-light d-flex flex-column justify-content-center align-items-center">
-        <div>
-          <h1 className="fw-bold titulo">Bienvenido a</h1>
-          <h2 className="marca">Gama Repuestos Quibdó</h2>
-          <p className="slogan">La fuerza del motor está en tus manos</p>
+      {/* Panel Izquierdo */}
+      <div className="login-left">
+        <h2>
+          Bienvenido a <br />
+          <span>Gama Repuestos Quibdó</span>
+        </h2>
+        <p>La fuerza del motor está en tus manos</p>
+        <div className="logo-section">
+          <img src="/logo.png" alt="Logo Gama" className="logo-img" />
         </div>
-        <img
-          src="/imagenes/android-chrome-192x192.png"
-          alt="Logo Gama"
-          className="login-logo mt-3"
-        />
       </div>
 
-      {/* Panel derecho */}
-      <div className="login-right d-flex align-items-center justify-content-center">
-        <Card className="login-card shadow-lg p-4">
+      {/* Panel Derecho */}
+      <div className="login-right">
+        <Card className="p-4 shadow-lg">
           <h3 className="text-center text-danger mb-4">Iniciar Sesión</h3>
-
-          {mensaje && (
-            <Alert variant={mensaje.includes("✅") ? "success" : "danger"}>
-              {mensaje}
-            </Alert>
-          )}
-
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
               <Form.Label>Correo electrónico</Form.Label>
               <Form.Control
-                type="email"
-                name="email"
-                value={formData.email}
+                type="text"
+                name="usuario"
+                value={formData.usuario}
                 onChange={handleChange}
                 placeholder="Ej: usuario@correo.com"
                 required
@@ -74,52 +70,33 @@ export default function Login() {
               <Form.Label>Contraseña</Form.Label>
               <Form.Control
                 type="password"
-                name="password"
-                value={formData.password}
+                name="contrasena"
+                value={formData.contrasena}
                 onChange={handleChange}
-                placeholder="********"
+                placeholder=""
                 required
               />
             </Form.Group>
 
-            {/* ✅ Botón con spinner */}
-            <div className="text-center">
-              <Button
-                type="submit"
-                variant="danger"
-                className="w-100 d-flex justify-content-center align-items-center"
-                disabled={cargando}
-              >
-                {cargando ? (
-                  <>
-                    <Spinner
-                      as="span"
-                      animation="border"
-                      size="sm"
-                      role="status"
-                      aria-hidden="true"
-                      className="me-2"
-                    />
-                    Iniciando sesión...
-                  </>
-                ) : (
-                  "Ingresar"
-                )}
-              </Button>
-            </div>
+            {error && <Alert variant="danger">{error}</Alert>}
 
-            <p className="text-center mt-3 small">
-              ¿No tienes cuenta?{" "}
-              <Link to="/register" className="text-danger text-decoration-none">
-                Regístrate aquí
-              </Link>
-            </p>
+            <Button
+              variant="danger"
+              type="submit"
+              className="w-100 mt-2"
+              disabled={cargando}
+            >
+              {cargando ? <Spinner size="sm" animation="border" /> : "Ingresar"}
+            </Button>
 
-            <div className="text-center mt-2 small">
-              <Link
-                to="/recuperarcontraseña"
-                className="forgot-link text-decoration-none"
-              >
+            <div className="text-center mt-3">
+              <p>
+                ¿No tienes cuenta?{" "}
+                <Link to="/register" className="text-danger">
+                  Regístrate aquí
+                </Link>
+              </p>
+              <Link to="/recuperarcontraseña" className="text-danger">
                 ¿Olvidaste tu contraseña?
               </Link>
             </div>

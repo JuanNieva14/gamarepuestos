@@ -11,7 +11,7 @@ import Estados from "./pages/Estados";
 import RegistroProductos from "./pages/RegistroProductos";
 import Acerca from "./pages/Acerca";
 import ManualUsuario from "./pages/ManualUsuario";
-import Tipos from "./pages/Tipos";
+import Danos from "./pages/Danos";
 import Personas from "./pages/Personas";
 import FormasPago from "./pages/FormasPago";
 import Pedidos from "./pages/Pedidos";
@@ -40,22 +40,23 @@ import Usuarios from "./pages/Usuarios";
 import Permisos from "./pages/Permisos";
 import ConfiguracionEmpresa from "./pages/ConfiguracionEmpresa";
 import Tutoriales from "./pages/Tutoriales";
-import Login from "./pages/Login";
 import Register from "./pages/Register";
 import RecuperarContraseña from "./pages/RecuperarContraseña";
+import Login from "./pages/Login";
 
 export default function App() {
   return (
     <Router>
       <Routes>
         {/* ✅ RUTAS PÚBLICAS */}
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Login />} />           {/* ← ahora el login es la raíz */}
+        <Route path="/login" element={<Login />} />      {/* opcional, para acceso directo */}
         <Route path="/register" element={<Register />} />
         <Route path="/recuperarcontraseña" element={<RecuperarContraseña />} />
 
         {/* 🔒 RUTAS PROTEGIDAS */}
         <Route
-          path="/"
+          path="/inicio"
           element={
             <ProtectedRoute>
               <Layout>
@@ -64,6 +65,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
 
         {/* BÁSICO */}
         <Route
@@ -77,11 +79,11 @@ export default function App() {
           }
         />
         <Route
-          path="/tipos"
+          path="/danos"
           element={
             <ProtectedRoute>
               <Layout>
-                <Tipos />
+                <Danos />
               </Layout>
             </ProtectedRoute>
           }

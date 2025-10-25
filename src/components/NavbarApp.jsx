@@ -23,15 +23,15 @@ export default function NavbarApp() {
           <Nav className="me-auto">
 
             {/* INICIO */}
-            <Nav.Link onClick={() => handleNavigation("/")}>Inicio</Nav.Link>
+            <Nav.Link onClick={() => handleNavigation("/inicio")}>Inicio</Nav.Link>
 
             {/* BÁSICO */}
             <NavDropdown title="Básico" id="basic-nav-dropdown">
               <NavDropdown.Item onClick={() => handleNavigation("/categorias")}>
                 Categoría de repuestos
               </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/tipos")}>
-                Tipos de repuestos
+              <NavDropdown.Item onClick={() => handleNavigation("/danos")}>
+                Repuestos dañados
               </NavDropdown.Item>
               <NavDropdown.Item onClick={() => handleNavigation("/personas")}>
                 Personas

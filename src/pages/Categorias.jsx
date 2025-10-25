@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Row,
@@ -8,239 +8,326 @@ import {
   Table,
   Card,
   Alert,
-  Badge,
   InputGroup,
+  Spinner,
 } from "react-bootstrap";
+import axios from "axios";
 
-/* 🔽 Componente reutilizable: lista desplegable */
-export function CategorySelect({ categories = [], value, onChange }) {
-  const capitalizar = (t) => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase();
-  return (
-    <Form.Select value={value} onChange={onChange}>
-      <option value="">Seleccione una categoría</option>
-      {categories.map((c) => (
-        <option key={c.id} value={c.id}>
-          {capitalizar(c.nombre)}
-        </option>
-      ))}
-    </Form.Select>
-  );
-}
-
-/* 💡 Página principal Categoría de Repuestos */
 export default function CategoriasRepuestos() {
-  const [categorias, setCategorias] = useState([
-    { id: 1, nombre: "Lubricantes", descripcion: "Aceites y grasas", estado: "Activo" },
-    { id: 2, nombre: "Motor", descripcion: "Partes internas del motor", estado: "Activo" },
-    { id: 3, nombre: "Frenos", descripcion: "Pastillas, discos, bombas", estado: "Inactivo" },
-    { id: 4, nombre: "Eléctricos", descripcion: "Baterías, bombillos y arneses", estado: "Activo" },
-    { id: 5, nombre: "Accesorios", descripcion: "Artículos de personalización", estado: "Activo" },
-  ]);
+  const API_URL = "http://localhost:8001/categorias";
 
-  const [formData, setFormData] = useState({ nombre: "", descripcion: "", estado: "Activo" });
+  const [categorias, setCategorias] = useState([]);
+  const [formData, setFormData] = useState({ nombre_categoria: "", activo: 1 });
   const [editId, setEditId] = useState(null);
   const [mensaje, setMensaje] = useState(null);
+  const [tipoMsg, setTipoMsg] = useState("success");
   const [busqueda, setBusqueda] = useState("");
+  const [cargando, setCargando] = useState(false);
 
-  const capitalizar = (t) => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase();
+  // 🔢 Paginación
+  const porPagina = 10;
+  const [paginaActiva, setPaginaActiva] = useState(1);
+  const [paginaInactiva, setPaginaInactiva] = useState(1);
 
-  const showMsg = (text, ms = 2200) => {
-    setMensaje(text);
+  const showMsg = (texto, tipo = "success", ms = 2500) => {
+    setMensaje(texto);
+    setTipoMsg(tipo);
     setTimeout(() => setMensaje(null), ms);
   };
 
   const resetForm = () => {
-    setFormData({ nombre: "", descripcion: "", estado: "Activo" });
+    setFormData({ nombre_categoria: "", activo: 1 });
     setEditId(null);
   };
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const nombreTrim = formData.nombre.trim();
-    if (!nombreTrim) {
-      showMsg("❌ El nombre de la categoría es obligatorio.");
-      return;
+  const listarCategorias = async () => {
+    try {
+      const res = await axios.get(API_URL);
+      setCategorias(res.data);
+    } catch {
+      showMsg("❌ Error al cargar las categorías.", "danger");
     }
+  };
 
-    if (editId) {
-      setCategorias((prev) =>
-        prev.map((c) => (c.id === editId ? { ...c, ...formData, nombre: nombreTrim } : c))
-      );
-      showMsg("✅ Categoría actualizada correctamente.");
-    } else {
-      const nueva = {
-        id: Date.now(),
-        nombre: nombreTrim,
-        descripcion: formData.descripcion.trim(),
-        estado: formData.estado,
-      };
-      setCategorias((prev) => [...prev, nueva]);
-      showMsg("✅ Categoría creada exitosamente.");
+  const crearCategoria = async () => {
+    try {
+      const res = await axios.post(API_URL, formData, {
+        headers: { "Content-Type": "application/json" },
+      });
+      showMsg(res.data.mensaje || "✅ Categoría creada correctamente.");
+      listarCategorias();
+    } catch {
+      showMsg("❌ Error al crear la categoría.", "danger");
     }
+  };
+
+  const actualizarCategoria = async (id) => {
+    try {
+      const res = await axios.put(`${API_URL}/${id}`, formData);
+      showMsg(res.data.mensaje || "✅ Categoría actualizada.");
+      listarCategorias();
+    } catch {
+      showMsg("❌ Error al actualizar la categoría.", "danger");
+    }
+  };
+
+  const eliminarCategoria = async (id) => {
+    if (window.confirm("¿Eliminar esta categoría permanentemente?")) {
+      try {
+        const res = await axios.delete(`${API_URL}/eliminar/${id}`);
+        showMsg(res.data.mensaje || "🗑️ Categoría eliminada.");
+        listarCategorias();
+      } catch {
+        showMsg("❌ Error al eliminar la categoría.", "danger");
+      }
+    }
+  };
+
+  const activarCategoria = async (id) => {
+    try {
+      const res = await axios.put(`${API_URL}/activar/${id}`);
+      showMsg(res.data.mensaje || "✅ Categoría activada.");
+      listarCategorias();
+    } catch {
+      showMsg("❌ Error al activar la categoría.", "danger");
+    }
+  };
+
+  const desactivarCategoria = async (id) => {
+    if (window.confirm("¿Desactivar esta categoría?")) {
+      try {
+        const res = await axios.delete(`${API_URL}/${id}`);
+        showMsg(res.data.mensaje || "⚠️ Categoría desactivada.");
+        listarCategorias();
+      } catch {
+        showMsg("❌ Error al desactivar la categoría.", "danger");
+      }
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const nombreTrim = formData.nombre_categoria.trim();
+    if (!nombreTrim)
+      return showMsg("❌ El nombre de la categoría es obligatorio.", "danger");
+
+    if (editId) await actualizarCategoria(editId);
+    else await crearCategoria();
     resetForm();
   };
 
   const handleEdit = (cat) => {
-    setEditId(cat.id);
+    setEditId(cat.id_categoria);
     setFormData({
-      nombre: cat.nombre,
-      descripcion: cat.descripcion || "",
-      estado: cat.estado || "Activo",
+      nombre_categoria: cat.nombre_categoria,
+      activo: cat.activo,
     });
   };
 
-  const handleDelete = (id) => {
-    setCategorias((prev) => prev.filter((c) => c.id !== id));
-    showMsg("🗑️ Categoría eliminada.");
-    if (editId === id) resetForm();
-  };
+  useEffect(() => {
+    listarCategorias();
+  }, []);
 
-  const renderEstado = (estado) => (
-    <Badge bg={estado === "Activo" ? "success" : "secondary"}>{estado}</Badge>
-  );
+  // 🔍 Buscador mejorado (por nombre o ID)
+  const categoriasFiltradas = categorias.filter((c) => {
+    const term = busqueda.toLowerCase();
+    return (
+      c.nombre_categoria.toLowerCase().includes(term) ||
+      c.id_categoria.toString().includes(term)
+    );
+  });
 
-  // 🔍 Filtro de búsqueda
-  const categoriasFiltradas = categorias.filter(
-    (c) =>
-      c.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-      (c.descripcion && c.descripcion.toLowerCase().includes(busqueda.toLowerCase()))
-  );
+  // 🔢 Divisiones por estado
+  const activas = categoriasFiltradas.filter((c) => c.activo === 1);
+  const inactivas = categoriasFiltradas.filter((c) => c.activo === 0);
+
+  // 📄 Paginación activas
+  const totalPaginasActivas = Math.ceil(activas.length / porPagina) || 1;
+  const inicioActivas = (paginaActiva - 1) * porPagina;
+  const activasPagina = activas.slice(inicioActivas, inicioActivas + porPagina);
+
+  // 📄 Paginación inactivas
+  const totalPaginasInactivas = Math.ceil(inactivas.length / porPagina) || 1;
+  const inicioInactivas = (paginaInactiva - 1) * porPagina;
+  const inactivasPagina = inactivas.slice(inicioInactivas, inicioInactivas + porPagina);
 
   return (
     <Container className="py-4">
       <Card className="p-4 shadow-lg bg-dark text-light border-0">
-        <h2 className="text-center text-danger mb-4">Categoría de Repuestos</h2>
+        <h2 className="text-center text-danger mb-4">Categorías de Repuestos</h2>
 
         {mensaje && (
-          <Alert
-            variant={
-              mensaje.startsWith("✅")
-                ? "success"
-                : mensaje.startsWith("🗑️")
-                ? "warning"
-                : "danger"
-            }
-            className="text-center"
-          >
+          <Alert variant={tipoMsg} className="text-center fw-bold">
             {mensaje}
           </Alert>
         )}
 
-        {/* 🔎 Barra de búsqueda */}
+        {/* 🔍 Búsqueda */}
         <Row className="mb-4">
           <Col md={6} className="mx-auto">
             <InputGroup>
               <Form.Control
-                placeholder="Buscar por nombre o descripción..."
+                placeholder="Buscar por nombre o ID..."
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
               />
-              <Button
-                variant="outline-danger"
-                onClick={() => setBusqueda("")}
-              >
+              <Button variant="outline-danger" onClick={() => setBusqueda("")}>
                 ✖ Limpiar
               </Button>
             </InputGroup>
           </Col>
         </Row>
 
-        {/* Formulario CRUD */}
+        {/* 🧾 Formulario */}
         <Form onSubmit={handleSubmit} className="mb-3">
           <Row className="g-3">
-            <Col md={4}>
+            <Col md={8}>
               <Form.Group>
                 <Form.Label>Nombre de la categoría</Form.Label>
                 <Form.Control
                   type="text"
-                  name="nombre"
-                  placeholder="Ej: Lubricantes, Motor, Frenos…"
-                  value={formData.nombre}
+                  name="nombre_categoria"
+                  value={formData.nombre_categoria}
                   onChange={handleChange}
                   required
                 />
               </Form.Group>
             </Col>
-
-            <Col md={5}>
-              <Form.Group>
-                <Form.Label>Descripción (opcional)</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="descripcion"
-                  placeholder="Breve descripción"
-                  value={formData.descripcion}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
-
-            <Col md={3}>
-              <Form.Group>
-                <Form.Label>Estado</Form.Label>
-                <Form.Select
-                  name="estado"
-                  value={formData.estado}
-                  onChange={handleChange}
-                >
-                  <option value="Activo">Activo</option>
-                  <option value="Inactivo">Inactivo</option>
-                </Form.Select>
-              </Form.Group>
+            <Col md={4} className="d-flex align-items-end">
+              <Button
+                type="submit"
+                variant={editId ? "warning" : "danger"}
+                className="w-100"
+                disabled={cargando}
+              >
+                {cargando ? (
+                  <Spinner size="sm" animation="border" />
+                ) : editId ? (
+                  "💾 Guardar cambios"
+                ) : (
+                  "➕ Agregar categoría"
+                )}
+              </Button>
             </Col>
           </Row>
-
-          <div className="d-flex gap-2 mt-3">
-            <Button type="submit" variant={editId ? "warning" : "danger"}>
-              {editId ? "💾 Guardar cambios" : "➕ Agregar categoría"}
-            </Button>
-            {editId && (
-              <Button type="button" variant="secondary" onClick={resetForm}>
-                Cancelar
-              </Button>
-            )}
-          </div>
         </Form>
 
-        {/* 🧾 Tabla de categorías */}
-        <Table striped bordered hover variant="dark" className="text-center align-middle">
+        {/* 🟢 Categorías Activas */}
+        <h5 className="text-light mt-4 mb-2">Categorías Activas</h5>
+        <Table
+          striped
+          bordered
+          hover
+          variant="dark"
+          className="text-center align-middle"
+        >
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Nombre</th>
-              <th>Descripción</th>
-              <th>Estado</th>
-              <th>Acciones</th>
+              <th style={{ width: "10%" }}>ID</th>
+              <th style={{ width: "60%" }}>Nombre</th>
+              <th style={{ width: "30%" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {categoriasFiltradas.length === 0 ? (
+            {activasPagina.length === 0 ? (
               <tr>
-                <td colSpan={5}>No se encontraron resultados.</td>
+                <td colSpan={3}>No hay categorías activas</td>
               </tr>
             ) : (
-              categoriasFiltradas.map((c) => (
-                <tr key={c.id}>
-                  <td>{c.id}</td>
-                  <td>{capitalizar(c.nombre)}</td>
-                  <td>{c.descripcion || "—"}</td>
-                  <td>{renderEstado(c.estado)}</td>
+              activasPagina.map((cat) => (
+                <tr key={cat.id_categoria}>
+                  <td>{cat.id_categoria}</td>
+                  <td>{cat.nombre_categoria}</td>
                   <td>
                     <Button
                       size="sm"
                       variant="outline-warning"
                       className="me-2"
-                      onClick={() => handleEdit(c)}
+                      onClick={() => handleEdit(cat)}
                     >
                       ✏️ Editar
                     </Button>
                     <Button
                       size="sm"
                       variant="outline-danger"
-                      onClick={() => handleDelete(c.id)}
+                      onClick={() => desactivarCategoria(cat.id_categoria)}
+                    >
+                      📴 Desactivar
+                    </Button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </Table>
+
+        {/* 🔢 Paginación Activas */}
+        {activas.length > porPagina && (
+          <div className="d-flex justify-content-center align-items-center gap-3 mb-4">
+            <Button
+              variant="outline-light"
+              size="sm"
+              disabled={paginaActiva === 1}
+              onClick={() => setPaginaActiva(paginaActiva - 1)}
+            >
+              ⬅️
+            </Button>
+            <span>
+              Sesión {paginaActiva} de {totalPaginasActivas}
+            </span>
+            <Button
+              variant="outline-light"
+              size="sm"
+              disabled={paginaActiva === totalPaginasActivas}
+              onClick={() => setPaginaActiva(paginaActiva + 1)}
+            >
+              ➡️
+            </Button>
+          </div>
+        )}
+
+        {/* 🔴 Categorías Inactivas */}
+        <h5 className="text-light mt-4 mb-2">Categorías Inactivas</h5>
+        <Table
+          striped
+          bordered
+          hover
+          variant="dark"
+          className="text-center align-middle"
+        >
+          <thead>
+            <tr>
+              <th style={{ width: "10%" }}>ID</th>
+              <th style={{ width: "60%" }}>Nombre</th>
+              <th style={{ width: "30%" }}>Opciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {inactivasPagina.length === 0 ? (
+              <tr>
+                <td colSpan={3}>No hay categorías inactivas</td>
+              </tr>
+            ) : (
+              inactivasPagina.map((cat) => (
+                <tr key={cat.id_categoria}>
+                  <td>{cat.id_categoria}</td>
+                  <td>{cat.nombre_categoria}</td>
+                  <td>
+                    <Button
+                      size="sm"
+                      variant="outline-success"
+                      className="me-2"
+                      onClick={() => activarCategoria(cat.id_categoria)}
+                    >
+                      🔄 Activar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline-danger"
+                      onClick={() => eliminarCategoria(cat.id_categoria)}
                     >
                       🗑️ Eliminar
                     </Button>
@@ -250,6 +337,31 @@ export default function CategoriasRepuestos() {
             )}
           </tbody>
         </Table>
+
+        {/* 🔢 Paginación Inactivas */}
+        {inactivas.length > porPagina && (
+          <div className="d-flex justify-content-center align-items-center gap-3">
+            <Button
+              variant="outline-light"
+              size="sm"
+              disabled={paginaInactiva === 1}
+              onClick={() => setPaginaInactiva(paginaInactiva - 1)}
+            >
+              ⬅️
+            </Button>
+            <span>
+              Sesión {paginaInactiva} de {totalPaginasInactivas}
+            </span>
+            <Button
+              variant="outline-light"
+              size="sm"
+              disabled={paginaInactiva === totalPaginasInactivas}
+              onClick={() => setPaginaInactiva(paginaInactiva + 1)}
+            >
+              ➡️
+            </Button>
+          </div>
+        )}
       </Card>
     </Container>
   );

@@ -22,7 +22,7 @@ export default function Inicio() {
       <section className="marcas-section text-center py-5">
         <Container>
           <img
-             src="/imagenes/android-chrome-192x192.png"
+             src="/imagenes/logo192x192.png"
             alt="logo gama repuestos"
             className="logo-principal mb-4"
           />
@@ -30,10 +30,10 @@ export default function Inicio() {
             Importador exclusivo para Colombia de:
           </p>
           <div className="logos-marcas d-flex justify-content-center align-items-center gap-4 flex-wrap mt-3">
-            <img src="/logo-elf.png" alt="Honda " className="marca-logo" />
-            <img src="/logo-mtz.png" alt="Yamaha" className="marca-logo" />
-            <img src="/logo-xcelink.png" alt="Suzuki" className="marca-logo" />
-            <img src="/logo-rkj.png" alt="Akt" className="marca-logo" />
+            <img src="./Imagenes/honda.png" alt="Honda " className="marca-logo" />
+            <img src="/Imagenes/yamaha.png" alt="Yamaha" className="marca-logo" />
+            <img src="/Imagenes/Suzuki.png" alt="Suzuki" className="marca-logo" />
+            <img src="/Imagenes/hero.png" alt="Hero" className="marca-logo" />
           </div>
         </Container>
       </section>
@@ -42,7 +42,7 @@ export default function Inicio() {
         <Container>
           <h2 className="text-light mb-4">Nuestros Productos</h2>
           <img
-            src="/imagenes/android-chrome-192x192.png"
+            src="/imagenes/fondo1.png"
             alt="Gama Repuestos Quibdó"
             className="img-fluid shadow-lg rounded"
           />
