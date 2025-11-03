@@ -5,7 +5,7 @@ import ProtectedRoute from "./components/Proteccion"; // ✅ ruta protegida
 
 // Páginas
 import Inicio from "./pages/Inicio";
-import Productos from "./pages/Productos";
+import Productos from "./pages/Consulta_Productos";
 import Categorias from "./pages/Categorias";
 import Estados from "./pages/Estados";
 import RegistroProductos from "./pages/RegistroProductos";
@@ -19,7 +19,7 @@ import Inventario from "./pages/Inventario";
 import VentaProductos from "./pages/VentaProductos";
 import ActualizarStock from "./pages/ActualizarStock";
 import CrearCotizacion from "./pages/CrearCotizacion";
-import Clientes from "./pages/Clientes";
+import Clientes from "./pages/Consulta_Clientes";
 import Proveedores from "./pages/Proveedores";
 import CotizacionesRealizadas from "./pages/CotizacionesRealizadas";
 import FacturasEmitidas from "./pages/FacturasEmitidas";

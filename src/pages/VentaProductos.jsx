@@ -1,310 +1,217 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  Container,
-  Card,
-  Form,
-  Button,
-  Table,
-  Alert,
-  Badge,
+  Container, Row, Col, Form, Button, Card, Spinner, Alert
 } from "react-bootstrap";
+import Select from "react-select";
+import axios from "axios";
+import { registrarVenta } from "../services/ventaproductos";
 
 export default function VentaProductos() {
-  const [ventas, setVentas] = useState([]);
-  const [mensaje, setMensaje] = useState(null);
+  const API_CLIENTES = "http://localhost:8001/clientes";
+  const API_PRODUCTOS = "http://localhost:8001/productos";
+  const API_FORMAS = "http://localhost:8001/formas_pago";
 
-  const [formData, setFormData] = useState({
-    cliente: "",
-    producto: "",
-    cantidad: "",
-    precio_unitario: "",
-    forma_pago: "Efectivo",
-    fecha: new Date().toISOString().split("T")[0],
+  const [clientes, setClientes] = useState([]);
+  const [productos, setProductos] = useState([]);
+  const [formasPago, setFormasPago] = useState([]);
+  const [mensaje, setMensaje] = useState(null);
+  const [tipoMsg, setTipoMsg] = useState("success");
+  const [cargando, setCargando] = useState(false);
+
+  const [formVenta, setFormVenta] = useState({
+    id_cliente: null,
+    id_forma_pago: "",
+    productos: [{ id_producto: null, cantidad: "", precio_unitario: "" }],
   });
 
-  // Lista simulada de productos disponibles
-  const productosDisponibles = [
-    { nombre: "Aceite 20W50", precio: 25000 },
-    { nombre: "Pastillas de freno", precio: 18000 },
-    { nombre: "Bujía NGK", precio: 12000 },
-    { nombre: "Filtro de aire", precio: 15000 },
-    { nombre: "Cadena reforzada", precio: 50000 },
-    { nombre: "Llanta delantera 2.50-17", precio: 80000 },
-    { nombre: "Amortiguador trasero", precio: 95000 },
-    { nombre: "Disco de freno", precio: 70000 },
-    { nombre: "Cables de acelerador", precio: 10000 },
-    { nombre: "Aceite de caja 10W40", precio: 27000 },
-  ];
+  useEffect(() => {
+    Promise.all([
+      axios.get(API_CLIENTES),
+      axios.get(API_PRODUCTOS),
+      axios.get(API_FORMAS),
+    ]).then(([resCli, resProd, resForma]) => {
+      setClientes(
+        resCli.data.map((c) => ({
+          value: c.id_cliente,
+          label: `${c.nombre} ${c.apellido}`,
+        }))
+      );
+      setProductos(
+        resProd.data.map((p) => ({
+          value: p.id_producto,
+          label: p.nombre_producto,
+          precio: p.precio_venta,
+        }))
+      );
+      setFormasPago(resForma.data);
+    });
+  }, []);
 
-  // Mostrar mensaje temporal
-  const showMsg = (texto, ms = 2500) => {
-    setMensaje(texto);
-    setTimeout(() => setMensaje(null), ms);
+  const handleProductoChange = (index, field, value) => {
+    const nuevos = [...formVenta.productos];
+    nuevos[index][field] = value;
+    setFormVenta({ ...formVenta, productos: nuevos });
   };
 
-  // Manejo de cambios en inputs
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    // Si selecciona un producto, autocompletar su precio
-    if (name === "producto") {
-      const seleccionado = productosDisponibles.find((p) => p.nombre === value);
-      setFormData({
-        ...formData,
-        producto: value,
-        precio_unitario: seleccionado ? seleccionado.precio : "",
-      });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
-  };
-
-  // Registrar venta
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const { cliente, producto, cantidad, precio_unitario, forma_pago } = formData;
-
-    if (!cliente || !producto || !cantidad || !precio_unitario) {
-      showMsg("❌ Todos los campos son obligatorios.");
-      return;
-    }
-
-    const total = parseFloat(cantidad) * parseFloat(precio_unitario);
-
-    const nuevaVenta = {
-      id_venta: Date.now(),
-      ...formData,
-      total,
-    };
-
-    setVentas([nuevaVenta, ...ventas]);
-    showMsg("✅ Venta registrada correctamente.");
-
-    setFormData({
-      cliente: "",
-      producto: "",
-      cantidad: "",
-      precio_unitario: "",
-      forma_pago: "Efectivo",
-      fecha: new Date().toISOString().split("T")[0],
+  const agregarProducto = () => {
+    setFormVenta({
+      ...formVenta,
+      productos: [...formVenta.productos, { id_producto: null, cantidad: "", precio_unitario: "" }],
     });
   };
 
-  // 🖨️ Imprimir factura directamente
-  const imprimirFactura = (venta) => {
-    const ventana = window.open("", "_blank");
-    ventana.document.write(`
-      <html>
-        <head>
-          <title>Factura Gama Repuestos Quibdó</title>
-          <style>
-            body { font-family: Arial; margin: 30px; }
-            h1, h2 { color: #c00; text-align: center; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #999; padding: 8px; text-align: center; }
-            th { background-color: #eee; }
-            .total { font-size: 18px; font-weight: bold; color: #222; text-align: right; margin-top: 20px; }
-          </style>
-        </head>
-        <body>
-          <h1>Gama Repuestos Quibdó</h1>
-          <h2>Factura de Venta N° ${venta.id_venta}</h2>
-          <p><strong>Cliente:</strong> ${venta.cliente}</p>
-          <p><strong>Fecha:</strong> ${venta.fecha}</p>
-          <p><strong>Forma de pago:</strong> ${venta.forma_pago}</p>
+  const calcularTotal = () => {
+    const subtotal = formVenta.productos.reduce((t, p) => {
+      return t + (parseFloat(p.cantidad || 0) * parseFloat(p.precio_unitario || 0));
+    }, 0);
+    const iva = subtotal * 0.19;
+    return { subtotal, iva, total: subtotal + iva };
+  };
 
-          <table>
-            <thead>
-              <tr>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Precio Unitario</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>${venta.producto}</td>
-                <td>${venta.cantidad}</td>
-                <td>$${parseFloat(venta.precio_unitario).toLocaleString()}</td>
-                <td>$${venta.total.toLocaleString()}</td>
-              </tr>
-            </tbody>
-          </table>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setCargando(true);
+    try {
+      const payload = {
+        id_cliente: formVenta.id_cliente?.value || 0,
+        id_forma_pago: Number(formVenta.id_forma_pago),
+        id_usuario: 1,
+        productos: formVenta.productos.map((p) => ({
+          id_producto: p.id_producto?.value || 0,
+          cantidad: Number(p.cantidad),
+          precio_unitario: Number(p.precio_unitario),
+        })),
+      };
 
-          <p class="total">Valor Total: $${venta.total.toLocaleString()}</p>
-          <p style="text-align:center; margin-top:40px;">Gracias por su compra.</p>
-        </body>
-      </html>
-    `);
-    ventana.document.close();
-    ventana.print();
+      const res = await registrarVenta(payload);
+      setMensaje(res.mensaje || "Venta registrada correctamente");
+      setTipoMsg("success");
+      setFormVenta({
+        id_cliente: null,
+        id_forma_pago: "",
+        productos: [{ id_producto: null, cantidad: "", precio_unitario: "" }],
+      });
+    } catch (error) {
+      console.error(error);
+      setMensaje("Error al registrar la venta");
+      setTipoMsg("danger");
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const { subtotal, iva, total } = calcularTotal();
+
+  const selectStyles = {
+    control: (base) => ({
+      ...base,
+      backgroundColor: "#212529",
+      borderColor: "#dc3545",
+      color: "white",
+    }),
+    singleValue: (base) => ({ ...base, color: "white" }),
+    menu: (base) => ({ ...base, backgroundColor: "#212529" }),
   };
 
   return (
     <Container className="py-4">
       <Card className="p-4 shadow-lg bg-dark text-light border-0">
         <h2 className="text-center text-danger mb-4">Registro de Ventas</h2>
-
         {mensaje && (
-          <Alert
-            variant={
-              mensaje.startsWith("✅")
-                ? "success"
-                : mensaje.startsWith("❌")
-                ? "danger"
-                : "warning"
-            }
-            className="text-center"
-          >
+          <Alert variant={tipoMsg} className="text-center fw-bold">
             {mensaje}
           </Alert>
         )}
 
         <Form onSubmit={handleSubmit}>
-          <Form.Group className="mb-3">
-            <Form.Label>Cliente</Form.Label>
-            <Form.Control
-              type="text"
-              name="cliente"
-              value={formData.cliente}
-              onChange={handleChange}
-              placeholder="Ej: Juan Pérez"
-            />
-          </Form.Group>
+          <Row className="g-3">
+            <Col md={6}>
+              <Form.Label>Cliente</Form.Label>
+              <Select
+                styles={selectStyles}
+                value={formVenta.id_cliente}
+                onChange={(opt) => setFormVenta({ ...formVenta, id_cliente: opt })}
+                options={clientes}
+                placeholder="Buscar cliente..."
+                isClearable
+              />
+            </Col>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Producto</Form.Label>
-            <Form.Select
-              name="producto"
-              value={formData.producto}
-              onChange={handleChange}
-            >
-              <option value="">Seleccione un producto</option>
-              {productosDisponibles.map((p, index) => (
-                <option key={index} value={p.nombre}>
-                  {p.nombre}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
+            <Col md={6}>
+              <Form.Label>Forma de Pago</Form.Label>
+              <Form.Select
+                className="bg-dark text-white border-danger"
+                name="id_forma_pago"
+                value={formVenta.id_forma_pago}
+                onChange={(e) => setFormVenta({ ...formVenta, id_forma_pago: e.target.value })}
+                required
+              >
+                <option value="">Seleccione</option>
+                {formasPago.map((f) => (
+                  <option key={f.id_forma_pago} value={f.id_forma_pago}>
+                    {f.nombre_forma}
+                  </option>
+                ))}
+              </Form.Select>
+            </Col>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Cantidad</Form.Label>
-            <Form.Control
-              type="number"
-              name="cantidad"
-              value={formData.cantidad}
-              onChange={handleChange}
-              placeholder="Ej: 3"
-              min="1"
-            />
-          </Form.Group>
+            {formVenta.productos.map((prod, index) => (
+              <Row key={index} className="g-2 mt-2">
+                <Col md={6}>
+                  <Form.Label>Producto {index + 1}</Form.Label>
+                  <Select
+                    styles={selectStyles}
+                    value={prod.id_producto}
+                    onChange={(opt) => handleProductoChange(index, "id_producto", opt)}
+                    options={productos}
+                    placeholder="Buscar producto..."
+                    isClearable
+                  />
+                </Col>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Precio Unitario (COP)</Form.Label>
-            <Form.Control
-              type="number"
-              name="precio_unitario"
-              value={formData.precio_unitario}
-              onChange={handleChange}
-              placeholder="Ej: 15000"
-              min="0"
-            />
-          </Form.Group>
+                <Col md={3}>
+                  <Form.Label>Cantidad</Form.Label>
+                  <Form.Control
+                    type="number"
+                    className="bg-dark text-white border-danger"
+                    value={prod.cantidad}
+                    onChange={(e) => handleProductoChange(index, "cantidad", e.target.value)}
+                  />
+                </Col>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Forma de Pago</Form.Label>
-            <Form.Select
-              name="forma_pago"
-              value={formData.forma_pago}
-              onChange={handleChange}
-            >
-              <option>Efectivo</option>
-              <option>Transferencia</option>
-              <option>Tarjeta Débito</option>
-              <option>Tarjeta Crédito</option>
-              <option>Nequi</option>
-            </Form.Select>
-          </Form.Group>
+                <Col md={3}>
+                  <Form.Label>Precio Unitario</Form.Label>
+                  <Form.Control
+                    type="number"
+                    className="bg-dark text-white border-danger"
+                    value={prod.precio_unitario}
+                    onChange={(e) => handleProductoChange(index, "precio_unitario", e.target.value)}
+                  />
+                </Col>
+              </Row>
+            ))}
 
-          <Form.Group className="mb-3">
-            <Form.Label>Fecha</Form.Label>
-            <Form.Control
-              type="date"
-              name="fecha"
-              value={formData.fecha}
-              onChange={handleChange}
-            />
-          </Form.Group>
+            <Col md={12} className="text-end mt-3">
+              <Button variant="outline-danger" onClick={agregarProducto}>
+                + Agregar otro producto
+              </Button>
+            </Col>
 
-          {formData.cantidad && formData.precio_unitario && (
-            <div className="text-end text-success mb-3">
-              <strong>
-                Total: $
-                {(
-                  parseFloat(formData.cantidad) *
-                  parseFloat(formData.precio_unitario)
-                ).toLocaleString()}
-              </strong>
-            </div>
-          )}
+            <Col md={12} className="text-end mt-3">
+              <h5>
+                Subtotal: <span className="text-warning">${subtotal.toLocaleString()}</span> <br />
+                IVA (19%): <span className="text-warning">${iva.toLocaleString()}</span> <br />
+                Total: <span className="text-success">${total.toLocaleString()}</span>
+              </h5>
+            </Col>
 
-          <div className="text-center">
-            <Button variant="danger" type="submit" className="px-5">
-              💾 Registrar Venta
-            </Button>
-          </div>
+            <Col md={12} className="text-center mt-3">
+              <Button variant="danger" type="submit" className="fw-bold px-4" disabled={cargando}>
+                {cargando ? <Spinner animation="border" size="sm" /> : "Registrar Venta"}
+              </Button>
+            </Col>
+          </Row>
         </Form>
-      </Card>
-
-      {/* 📋 Tabla de ventas */}
-      <Card className="p-4 mt-4 shadow bg-dark text-light border-0">
-        <h4 className="text-center text-danger mb-3">Ventas Registradas</h4>
-        <Table striped bordered hover variant="dark" className="text-center align-middle">
-          <thead>
-            <tr>
-              <th>ID Venta</th>
-              <th>Cliente</th>
-              <th>Producto</th>
-              <th>Cantidad</th>
-              <th>Valor Total</th>
-              <th>Forma de Pago</th>
-              <th>Fecha</th>
-              <th>Acción</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ventas.length === 0 ? (
-              <tr>
-                <td colSpan={8}>No hay ventas registradas.</td>
-              </tr>
-            ) : (
-              ventas.map((v) => (
-                <tr key={v.id_venta}>
-                  <td>{v.id_venta}</td>
-                  <td>{v.cliente}</td>
-                  <td>{v.producto}</td>
-                  <td>{v.cantidad}</td>
-                  <td>${v.total.toLocaleString()}</td>
-                  <td>
-                    <Badge bg="secondary">{v.forma_pago}</Badge>
-                  </td>
-                  <td>{v.fecha}</td>
-                  <td>
-                    <Button
-                      size="sm"
-                      variant="outline-light"
-                      onClick={() => imprimirFactura(v)}
-                    >
-                      🖨️ Imprimir Factura
-                    </Button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </Table>
       </Card>
     </Container>
   );

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Form, Button, Card, Spinner, Alert } from "react-bootstrap";
 import { useNavigate, Link } from "react-router-dom";
 import { loginUsuario } from "../services/login";
-import "./Login.css"; // 🔹 Importa los estilos personalizados
+import "./Login.css";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -22,13 +22,19 @@ export default function Login() {
     try {
       const respuesta = await loginUsuario(formData);
 
-      // ✅ Guardar usuario en localStorage (para ProtectedRoute)
-      localStorage.setItem("usuario", JSON.stringify(respuesta.usuario));
+      if (respuesta.ok && respuesta.usuario) {
+        // ✅ Guardar usuario completo (incluyendo id_usuario)
+        localStorage.setItem("usuario", JSON.stringify(respuesta.usuario));
 
-      // ✅ Redirigir a la página principal
-      navigate("/inicio");
+        console.log("👤 Usuario logueado:", respuesta.usuario);
+
+        // ✅ Redirigir a la página principal
+        navigate("/inicio");
+      } else {
+        setError("Usuario o contraseña incorrectos");
+      }
     } catch (err) {
-      console.error("Error de login:", err);
+      console.error("❌ Error de login:", err);
       setError("Usuario o contraseña incorrectos");
     } finally {
       setCargando(false);
@@ -53,9 +59,10 @@ export default function Login() {
       <div className="login-right">
         <Card className="p-4 shadow-lg">
           <h3 className="text-center text-danger mb-4">Iniciar Sesión</h3>
+
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
-              <Form.Label>Correo electrónico</Form.Label>
+              <Form.Label>Correo electrónico o usuario</Form.Label>
               <Form.Control
                 type="text"
                 name="usuario"
@@ -73,7 +80,7 @@ export default function Login() {
                 name="contrasena"
                 value={formData.contrasena}
                 onChange={handleChange}
-                placeholder=""
+                placeholder="••••••••"
                 required
               />
             </Form.Group>
@@ -83,7 +90,7 @@ export default function Login() {
             <Button
               variant="danger"
               type="submit"
-              className="w-100 mt-2"
+              className="w-100 mt-2 fw-bold"
               disabled={cargando}
             >
               {cargando ? <Spinner size="sm" animation="border" /> : "Ingresar"}
@@ -92,7 +99,7 @@ export default function Login() {
             <div className="text-center mt-3">
               <p>
                 ¿No tienes cuenta?{" "}
-                <Link to="/register" className="text-danger">
+                <Link to="/register" className="text-danger fw-semibold">
                   Regístrate aquí
                 </Link>
               </p>

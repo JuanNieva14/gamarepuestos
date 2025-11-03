@@ -1,3 +1,4 @@
+
 // services/login.js
 export async function loginUsuario(datos) {
   try {
@@ -12,7 +13,12 @@ export async function loginUsuario(datos) {
     }
 
     const resultado = await respuesta.json();
-    localStorage.setItem("usuario", resultado.usuario);
+
+    // ✅ Guardar el usuario correctamente en localStorage
+    if (resultado.usuario) {
+      localStorage.setItem("usuario", JSON.stringify(resultado.usuario));
+    }
+
     return resultado;
   } catch (error) {
     console.error("Error en login:", error);

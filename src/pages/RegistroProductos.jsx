@@ -1,338 +1,259 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Card, Form, Button, Row, Col, Alert, Spinner } from "react-bootstrap";
 import {
-  Container,
-  Card,
-  Form,
-  Button,
-  Table,
-  Alert,
-  Badge,
-} from "react-bootstrap";
+  registrarProducto,
+  obtenerCategorias,
+  obtenerClasificaciones,
+} from "../services/RegistroProductos";
 
 export default function RegistroProductos() {
-  const [productos, setProductos] = useState([
-    {
-      id: 1,
-      nombre: "Aceite 20W50",
-      tipo: "Lubricante",
-      categoria: "Motor",
-      precio: 25000,
-      proveedor: "Lubricantes Colmoto",
-      fecha_ingreso: "2025-09-30",
-      estado: "Activo",
-      imagen: null,
-    },
-  ]);
-
   const [formData, setFormData] = useState({
-    nombre: "",
-    tipo: "",
-    categoria: "",
-    precio: "",
-    proveedor: "",
-    fecha_ingreso: "",
-    estado: "Activo",
-    imagen: null,
+    nombre_producto: "",
+    descripcion: "",
+    id_categoria: "",
+    id_clasificacion: "",
+    id_estado: 1,
+    precio_compra: "",
+    precio_venta: "",
+    stock_actual: "",
+    stock_minimo: "",
   });
 
-  const [preview, setPreview] = useState(null);
+  const [categorias, setCategorias] = useState([]);
+  const [clasificaciones, setClasificaciones] = useState([]);
+  const [margen, setMargen] = useState("");
   const [mensaje, setMensaje] = useState(null);
+  const [enviando, setEnviando] = useState(false);
 
-  // 💬 Mostrar mensajes
-  const showMsg = (texto, ms = 2500) => {
-    setMensaje(texto);
-    setTimeout(() => setMensaje(null), ms);
-  };
-
-  // 🔄 Manejo de inputs
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === "imagen") {
-      const file = files[0];
-      setFormData({ ...formData, imagen: file });
-      setPreview(URL.createObjectURL(file));
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
-  };
-
-  // 💾 Registrar producto
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    const { nombre, tipo, categoria, precio, proveedor, fecha_ingreso } =
-      formData;
-
-    if (
-      !nombre ||
-      !tipo ||
-      !categoria ||
-      !precio ||
-      !proveedor ||
-      !fecha_ingreso
-    ) {
-      showMsg("❌ Todos los campos son obligatorios.");
-      return;
-    }
-
-    const nuevo = {
-      id: Date.now(),
-      ...formData,
+  useEffect(() => {
+    const cargarDatos = async () => {
+      try {
+        const cat = await obtenerCategorias();
+        const clas = await obtenerClasificaciones();
+        setCategorias(cat);
+        setClasificaciones(clas);
+      } catch (err) {
+        console.error("Error al cargar datos:", err);
+      }
     };
+    cargarDatos();
+  }, []);
 
-    // Agrega el nuevo producto al inicio y limita la lista a los 10 más recientes
-    const actualizados = [nuevo, ...productos].slice(0, 10);
-
-    setProductos(actualizados);
-    showMsg("✅ Producto registrado correctamente.");
-
-    setFormData({
-      nombre: "",
-      tipo: "",
-      categoria: "",
-      precio: "",
-      proveedor: "",
-      fecha_ingreso: "",
-      estado: "Activo",
-      imagen: null,
-    });
-    setPreview(null);
+  const calcularMargen = (compra, venta) => {
+    const c = parseFloat(compra);
+    const v = parseFloat(venta);
+    if (c > 0 && v > 0) {
+      const margenCalc = ((v - c) / c) * 100;
+      setMargen(`${margenCalc.toFixed(2)}%`);
+    } else {
+      setMargen("");
+    }
   };
 
-  // 🗑️ Eliminar producto
-  const handleDelete = (id) => {
-    setProductos(productos.filter((p) => p.id !== id));
-    showMsg("🗑️ Producto eliminado correctamente.");
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+
+    if (name === "precio_compra" || name === "precio_venta") {
+      const compra = name === "precio_compra" ? value : formData.precio_compra;
+      const venta = name === "precio_venta" ? value : formData.precio_venta;
+      calcularMargen(compra, venta);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setEnviando(true);
+    setMensaje(null);
+
+    try {
+      const data = await registrarProducto(formData);
+      setMensaje({
+        tipo: "success",
+        texto: `Producto registrado correctamente | Código: ${data.codigo} | Margen: ${data.margen}`,
+      });
+      setFormData({
+        nombre_producto: "",
+        descripcion: "",
+        id_categoria: "",
+        id_clasificacion: "",
+        id_estado: 1,
+        precio_compra: "",
+        precio_venta: "",
+        stock_actual: "",
+        stock_minimo: "",
+      });
+      setMargen("");
+    } catch {
+      setMensaje({
+        tipo: "danger",
+        texto: "Error al registrar el producto",
+      });
+    } finally {
+      setEnviando(false);
+    }
   };
 
   return (
-    <Container className="py-4">
-      <Card className="p-4 shadow-lg bg-dark text-light border-0">
-        <h2 className="text-center text-danger mb-4">Registro de Productos</h2>
+    <Card className="p-4 shadow-lg bg-dark text-white">
+      <h3 className="text-center text-danger mb-4">Registrar Nuevo Producto</h3>
 
-        {/* 🔔 Mensajes */}
+      <Form onSubmit={handleSubmit}>
+        <Row className="mb-3">
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label>Nombre del Producto</Form.Label>
+              <Form.Control
+                type="text"
+                name="nombre_producto"
+                value={formData.nombre_producto}
+                onChange={handleChange}
+                placeholder="Ej: Aceite 10W-40 Bajaj (Original OEM)"
+                className="bg-dark text-white border-danger"
+                required
+              />
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label>Categoría</Form.Label>
+              <Form.Select
+                name="id_categoria"
+                value={formData.id_categoria}
+                onChange={handleChange}
+                className="bg-dark text-white border-danger"
+                required
+              >
+                <option value="">Seleccione una categoría</option>
+                {categorias.map((c) => (
+                  <option key={c.id_categoria} value={c.id_categoria}>
+                    {c.nombre_categoria}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Col>
+        </Row>
+
+        <Form.Group className="mb-3">
+          <Form.Label>Descripción</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={2}
+            name="descripcion"
+            value={formData.descripcion}
+            onChange={handleChange}
+            placeholder="Ej: Aceite para motocicleta marca Bajaj, calidad OEM."
+            className="bg-dark text-white border-danger"
+          />
+        </Form.Group>
+
+        <Row className="mb-3">
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label>Clasificación</Form.Label>
+              <Form.Select
+                name="id_clasificacion"
+                value={formData.id_clasificacion}
+                onChange={handleChange}
+                className="bg-dark text-white border-danger"
+                required
+              >
+                <option value="">Seleccione una clasificación</option>
+                {clasificaciones.map((cl) => (
+                  <option
+                    key={cl.id_clasificacion}
+                    value={cl.id_clasificacion}
+                  >
+                    {cl.nombre_clasificacion}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Col>
+          <Col md={3}>
+            <Form.Group>
+              <Form.Label>Precio Compra</Form.Label>
+              <Form.Control
+                type="number"
+                name="precio_compra"
+                value={formData.precio_compra}
+                onChange={handleChange}
+                className="bg-dark text-white border-danger"
+                required
+              />
+            </Form.Group>
+          </Col>
+          <Col md={3}>
+            <Form.Group>
+              <Form.Label>Precio Venta</Form.Label>
+              <Form.Control
+                type="number"
+                name="precio_venta"
+                value={formData.precio_venta}
+                onChange={handleChange}
+                className="bg-dark text-white border-danger"
+                required
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+
+        <Row className="mb-3">
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Stock Actual</Form.Label>
+              <Form.Control
+                type="number"
+                name="stock_actual"
+                value={formData.stock_actual}
+                onChange={handleChange}
+                className="bg-dark text-white border-danger"
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Stock Mínimo</Form.Label>
+              <Form.Control
+                type="number"
+                name="stock_minimo"
+                value={formData.stock_minimo}
+                onChange={handleChange}
+                className="bg-dark text-white border-danger"
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label>Margen (%)</Form.Label>
+              <Form.Control
+                type="text"
+                readOnly
+                value={margen}
+                className="bg-secondary text-white border-0"
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+
         {mensaje && (
-          <Alert
-            variant={
-              mensaje.startsWith("✅")
-                ? "success"
-                : mensaje.startsWith("❌")
-                ? "danger"
-                : "warning"
-            }
-            className="text-center"
-          >
-            {mensaje}
+          <Alert variant={mensaje.tipo} className="text-center">
+            {mensaje.texto}
           </Alert>
         )}
 
-        {/* 🧾 Formulario */}
-        <Form onSubmit={handleSubmit}>
-          <Form.Group className="mb-3">
-            <Form.Label>Nombre del Producto</Form.Label>
-            <Form.Control
-              type="text"
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              placeholder="Ej: Pastillas de freno"
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Tipo</Form.Label>
-            <Form.Select
-              name="tipo"
-              value={formData.tipo}
-              onChange={handleChange}
-            >
-              <option value="">Seleccione un tipo</option>
-              <option value="Repuesto">Repuesto</option>
-              <option value="Accesorio">Accesorio</option>
-              <option value="Lubricante">Lubricante</option>
-              <option value="Eléctrico">Eléctrico</option>
-            </Form.Select>
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Categoría</Form.Label>
-            <Form.Select
-              name="categoria"
-              value={formData.categoria}
-              onChange={handleChange}
-            >
-              <option value="">Seleccione una categoría</option>
-              <option value="Motor">Motor</option>
-              <option value="Frenos">Frenos</option>
-              <option value="Transmisión">Transmisión</option>
-              <option value="Suspensión">Suspensión</option>
-            </Form.Select>
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Precio (COP)</Form.Label>
-            <Form.Control
-              type="number"
-              name="precio"
-              value={formData.precio}
-              onChange={handleChange}
-              placeholder="Ej: 25000"
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Proveedor</Form.Label>
-            <Form.Control
-              type="text"
-              name="proveedor"
-              value={formData.proveedor}
-              onChange={handleChange}
-              placeholder="Ej: Repuestos del Norte S.A.S"
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Fecha de Ingreso</Form.Label>
-            <Form.Control
-              type="date"
-              name="fecha_ingreso"
-              value={formData.fecha_ingreso}
-              onChange={handleChange}
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Estado</Form.Label>
-            <Form.Select
-              name="estado"
-              value={formData.estado}
-              onChange={handleChange}
-            >
-              <option value="Activo">Activo</option>
-              <option value="Agotado">Agotado</option>
-              <option value="En Pedido">En Pedido</option>
-            </Form.Select>
-          </Form.Group>
-
-          {/* 🖼️ Carga de imagen */}
-          <Form.Group className="mb-3">
-            <Form.Label>Imagen del producto</Form.Label>
-            <Form.Control
-              type="file"
-              name="imagen"
-              accept="image/*"
-              onChange={handleChange}
-            />
-          </Form.Group>
-
-          {preview && (
-            <div className="text-center mb-3">
-              <img
-                src={preview}
-                alt="Vista previa"
-                className="rounded shadow"
-                style={{ width: "120px", height: "120px", objectFit: "cover" }}
-              />
-            </div>
-          )}
-
-          <div className="text-center">
-            <Button variant="danger" type="submit" className="px-5">
-              ➕ Registrar Producto
-            </Button>
-          </div>
-        </Form>
-      </Card>
-
-      {/* 📋 Tabla de productos recientes */}
-      <Card className="p-4 mt-4 shadow bg-dark text-light border-0">
-        <h4 className="text-center text-danger mb-3">
-          Últimos 10 Productos Registrados
-        </h4>
-        <Table
-          striped
-          bordered
-          hover
-          variant="dark"
-          className="text-center align-middle"
-        >
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nombre</th>
-              <th>Tipo</th>
-              <th>Categoría</th>
-              <th>Precio</th>
-              <th>Proveedor</th>
-              <th>Fecha Ingreso</th>
-              <th>Estado</th>
-              <th>Imagen</th>
-              <th>Acción</th>
-            </tr>
-          </thead>
-          <tbody>
-            {productos.length === 0 ? (
-              <tr>
-                <td colSpan={10}>No hay productos registrados.</td>
-              </tr>
-            ) : (
-              productos.map((p) => (
-                <tr key={p.id}>
-                  <td>{p.id}</td>
-                  <td>{p.nombre}</td>
-                  <td>{p.tipo}</td>
-                  <td>{p.categoria}</td>
-                  <td>${p.precio.toLocaleString()}</td>
-                  <td>{p.proveedor}</td>
-                  <td>{p.fecha_ingreso}</td>
-                  <td>
-                    <Badge
-                      bg={
-                        p.estado === "Activo"
-                          ? "success"
-                          : p.estado === "Agotado"
-                          ? "danger"
-                          : "warning"
-                      }
-                    >
-                      {p.estado}
-                    </Badge>
-                  </td>
-                  <td>
-                    {p.imagen ? (
-                      <img
-                        src={
-                          typeof p.imagen === "string"
-                            ? p.imagen
-                            : URL.createObjectURL(p.imagen)
-                        }
-                        alt={p.nombre}
-                        style={{
-                          width: "60px",
-                          height: "60px",
-                          borderRadius: "5px",
-                          objectFit: "cover",
-                        }}
-                      />
-                    ) : (
-                      "Sin imagen"
-                    )}
-                  </td>
-                  <td>
-                    <Button
-                      size="sm"
-                      variant="outline-danger"
-                      onClick={() => handleDelete(p.id)}
-                    >
-                      🗑️ Eliminar
-                    </Button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </Table>
-      </Card>
-    </Container>
+        <div className="text-center">
+          <Button
+            type="submit"
+            variant="danger"
+            className="fw-bold px-4"
+            disabled={enviando}
+          >
+            {enviando ? <Spinner size="sm" animation="border" /> : "Registrar"}
+          </Button>
+        </div>
+      </Form>
+    </Card>
   );
 }

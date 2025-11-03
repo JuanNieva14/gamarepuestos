@@ -10,24 +10,28 @@ import {
   Alert,
   InputGroup,
   Spinner,
+  Modal,
 } from "react-bootstrap";
 import axios from "axios";
 
-export default function CategoriasRepuestos() {
-  const API_URL = "http://localhost:8001/categorias";
+export default function CategoriasClasificaciones() {
+  const API_CAT = "http://localhost:8001/categorias";
+  const API_CLA = "http://localhost:8001/clasificaciones";
 
-  const [categorias, setCategorias] = useState([]);
-  const [formData, setFormData] = useState({ nombre_categoria: "", activo: 1 });
-  const [editId, setEditId] = useState(null);
+  const [tipoVista, setTipoVista] = useState("categoria");
+  const [data, setData] = useState([]);
+  const [busqueda, setBusqueda] = useState(""); // ← Barra vacía por defecto
   const [mensaje, setMensaje] = useState(null);
   const [tipoMsg, setTipoMsg] = useState("success");
-  const [busqueda, setBusqueda] = useState("");
+  const [mostrarModal, setMostrarModal] = useState(false);
+  const [formCategoria, setFormCategoria] = useState({ nombre_categoria: "", activo: 1 });
+  const [formClasificacion, setFormClasificacion] = useState({
+    nombre_clasificacion: "",
+    tipo: "",
+    activo: 1,
+  });
   const [cargando, setCargando] = useState(false);
-
-  // 🔢 Paginación
-  const porPagina = 10;
-  const [paginaActiva, setPaginaActiva] = useState(1);
-  const [paginaInactiva, setPaginaInactiva] = useState(1);
+  const [editId, setEditId] = useState(null);
 
   const showMsg = (texto, tipo = "success", ms = 2500) => {
     setMensaje(texto);
@@ -35,129 +39,138 @@ export default function CategoriasRepuestos() {
     setTimeout(() => setMensaje(null), ms);
   };
 
-  const resetForm = () => {
-    setFormData({ nombre_categoria: "", activo: 1 });
-    setEditId(null);
-  };
-
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-
-  const listarCategorias = async () => {
+  const listar = async () => {
     try {
-      const res = await axios.get(API_URL);
-      setCategorias(res.data);
+      const res =
+        tipoVista === "categoria"
+          ? await axios.get(API_CAT)
+          : await axios.get(API_CLA);
+      setData(res.data);
     } catch {
-      showMsg("❌ Error al cargar las categorías.", "danger");
+      showMsg("Error al cargar los datos.", "danger");
     }
-  };
-
-  const crearCategoria = async () => {
-    try {
-      const res = await axios.post(API_URL, formData, {
-        headers: { "Content-Type": "application/json" },
-      });
-      showMsg(res.data.mensaje || "✅ Categoría creada correctamente.");
-      listarCategorias();
-    } catch {
-      showMsg("❌ Error al crear la categoría.", "danger");
-    }
-  };
-
-  const actualizarCategoria = async (id) => {
-    try {
-      const res = await axios.put(`${API_URL}/${id}`, formData);
-      showMsg(res.data.mensaje || "✅ Categoría actualizada.");
-      listarCategorias();
-    } catch {
-      showMsg("❌ Error al actualizar la categoría.", "danger");
-    }
-  };
-
-  const eliminarCategoria = async (id) => {
-    if (window.confirm("¿Eliminar esta categoría permanentemente?")) {
-      try {
-        const res = await axios.delete(`${API_URL}/eliminar/${id}`);
-        showMsg(res.data.mensaje || "🗑️ Categoría eliminada.");
-        listarCategorias();
-      } catch {
-        showMsg("❌ Error al eliminar la categoría.", "danger");
-      }
-    }
-  };
-
-  const activarCategoria = async (id) => {
-    try {
-      const res = await axios.put(`${API_URL}/activar/${id}`);
-      showMsg(res.data.mensaje || "✅ Categoría activada.");
-      listarCategorias();
-    } catch {
-      showMsg("❌ Error al activar la categoría.", "danger");
-    }
-  };
-
-  const desactivarCategoria = async (id) => {
-    if (window.confirm("¿Desactivar esta categoría?")) {
-      try {
-        const res = await axios.delete(`${API_URL}/${id}`);
-        showMsg(res.data.mensaje || "⚠️ Categoría desactivada.");
-        listarCategorias();
-      } catch {
-        showMsg("❌ Error al desactivar la categoría.", "danger");
-      }
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const nombreTrim = formData.nombre_categoria.trim();
-    if (!nombreTrim)
-      return showMsg("❌ El nombre de la categoría es obligatorio.", "danger");
-
-    if (editId) await actualizarCategoria(editId);
-    else await crearCategoria();
-    resetForm();
-  };
-
-  const handleEdit = (cat) => {
-    setEditId(cat.id_categoria);
-    setFormData({
-      nombre_categoria: cat.nombre_categoria,
-      activo: cat.activo,
-    });
   };
 
   useEffect(() => {
-    listarCategorias();
-  }, []);
+    listar();
+  }, [tipoVista]);
 
-  // 🔍 Buscador mejorado (por nombre o ID)
-  const categoriasFiltradas = categorias.filter((c) => {
-    const term = busqueda.toLowerCase();
-    return (
-      c.nombre_categoria.toLowerCase().includes(term) ||
-      c.id_categoria.toString().includes(term)
-    );
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setCargando(true);
+    try {
+      if (tipoVista === "categoria") {
+        if (editId) {
+          await axios.put(`${API_CAT}/${editId}`, formCategoria);
+          showMsg("Categoría actualizada correctamente.");
+        } else {
+          await axios.post(API_CAT, formCategoria);
+          showMsg("Categoría creada correctamente.");
+        }
+      } else {
+        if (editId) {
+          await axios.put(`${API_CLA}/${editId}`, formClasificacion);
+          showMsg("Clasificación actualizada correctamente.");
+        } else {
+          await axios.post(API_CLA, formClasificacion);
+          showMsg("Clasificación creada correctamente.");
+        }
+      }
+      setMostrarModal(false);
+      setFormCategoria({ nombre_categoria: "", activo: 1 });
+      setFormClasificacion({ nombre_clasificacion: "", tipo: "", activo: 1 });
+      setEditId(null);
+      listar();
+    } catch (error) {
+      console.error("Error:", error);
+      showMsg("Error al registrar.", "danger");
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const desactivar = async (id) => {
+    if (!window.confirm("¿Deseas desactivar este registro?")) return;
+    try {
+      if (tipoVista === "categoria") {
+        await axios.delete(`${API_CAT}/${id}`);
+      } else {
+        await axios.put(`${API_CLA}/desactivar/${id}`);
+      }
+      showMsg("Desactivado correctamente.");
+      listar();
+    } catch {
+      showMsg("Error al desactivar.", "danger");
+    }
+  };
+
+  const activar = async (id) => {
+    try {
+      if (tipoVista === "categoria") {
+        await axios.put(`${API_CAT}/activar/${id}`);
+      } else {
+        await axios.put(`${API_CLA}/activar/${id}`);
+      }
+      showMsg("Activado correctamente.");
+      listar();
+    } catch {
+      showMsg("Error al activar.", "danger");
+    }
+  };
+
+  const eliminar = async (id) => {
+    if (!window.confirm("¿Eliminar este registro permanentemente?")) return;
+    try {
+      if (tipoVista === "categoria") {
+        await axios.delete(`${API_CAT}/eliminar/${id}`);
+      } else {
+        await axios.delete(`${API_CLA}/eliminar/${id}`);
+      }
+      showMsg("Eliminado correctamente.");
+      listar();
+    } catch {
+      showMsg("Error al eliminar.", "danger");
+    }
+  };
+
+  const editar = (item) => {
+    setEditId(item.id_categoria || item.id_clasificacion);
+    if (tipoVista === "categoria") {
+      setFormCategoria({
+        nombre_categoria: item.nombre_categoria,
+        activo: item.activo,
+      });
+    } else {
+      setFormClasificacion({
+        nombre_clasificacion: item.nombre_clasificacion,
+        tipo: item.tipo,
+        activo: item.activo,
+      });
+    }
+    setMostrarModal(true);
+  };
+
+  const filtrados = (data || []).filter((d) => {
+    const nombre =
+      tipoVista === "categoria"
+        ? (d?.nombre_categoria ?? "")
+        : (d?.nombre_clasificacion ?? "");
+    return nombre.toLowerCase().includes(busqueda.toLowerCase());
   });
 
-  // 🔢 Divisiones por estado
-  const activas = categoriasFiltradas.filter((c) => c.activo === 1);
-  const inactivas = categoriasFiltradas.filter((c) => c.activo === 0);
+  const normalizados = filtrados.map((d) =>
+    typeof d.activo === "number" ? d : { ...d, activo: 1 }
+  );
 
-  // 📄 Paginación activas
-  const totalPaginasActivas = Math.ceil(activas.length / porPagina) || 1;
-  const inicioActivas = (paginaActiva - 1) * porPagina;
-  const activasPagina = activas.slice(inicioActivas, inicioActivas + porPagina);
-
-  // 📄 Paginación inactivas
-  const totalPaginasInactivas = Math.ceil(inactivas.length / porPagina) || 1;
-  const inicioInactivas = (paginaInactiva - 1) * porPagina;
-  const inactivasPagina = inactivas.slice(inicioInactivas, inicioInactivas + porPagina);
+  const activos = normalizados.filter((d) => d.activo === 1);
+  const inactivos = normalizados.filter((d) => d.activo === 0);
 
   return (
     <Container className="py-4">
       <Card className="p-4 shadow-lg bg-dark text-light border-0">
-        <h2 className="text-center text-danger mb-4">Categorías de Repuestos</h2>
+        <h2 className="text-center text-danger mb-4">
+          Gestión de Categorías y Clasificaciones
+        </h2>
 
         {mensaje && (
           <Alert variant={tipoMsg} className="text-center fw-bold">
@@ -165,203 +178,235 @@ export default function CategoriasRepuestos() {
           </Alert>
         )}
 
-        {/* 🔍 Búsqueda */}
-        <Row className="mb-4">
-          <Col md={6} className="mx-auto">
+        {/* Barra superior */}
+        <Row className="mb-4 align-items-center">
+          <Col md={4}>
+            <Form.Select
+              value={tipoVista}
+              onChange={(e) => {
+                setTipoVista(e.target.value);
+                setBusqueda(""); // Limpia búsqueda al cambiar vista
+              }}
+              className="bg-dark text-white border-danger"
+            >
+              <option value="categoria">Categorías</option>
+              <option value="clasificacion">Clasificaciones</option>
+            </Form.Select>
+          </Col>
+
+          <Col md={5}>
             <InputGroup>
               <Form.Control
-                placeholder="Buscar por nombre o ID..."
+                placeholder={`Buscar ${
+                  tipoVista === "categoria" ? "categoría" : "clasificación"
+                }...`}
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
+                className="bg-dark text-white border-danger"
               />
-              <Button variant="outline-danger" onClick={() => setBusqueda("")}>
-                ✖ Limpiar
+              <Button
+                variant="outline-danger"
+                onClick={() => setBusqueda("")}
+              >
+                Limpiar
               </Button>
             </InputGroup>
           </Col>
+
+          <Col md={3} className="text-end">
+            <Button
+              variant="danger"
+              className="fw-bold"
+              onClick={() => {
+                setMostrarModal(true);
+                setEditId(null);
+              }}
+            >
+              + Registrar
+            </Button>
+          </Col>
         </Row>
 
-        {/* 🧾 Formulario */}
-        <Form onSubmit={handleSubmit} className="mb-3">
-          <Row className="g-3">
-            <Col md={8}>
-              <Form.Group>
-                <Form.Label>Nombre de la categoría</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="nombre_categoria"
-                  value={formData.nombre_categoria}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-            </Col>
-            <Col md={4} className="d-flex align-items-end">
-              <Button
-                type="submit"
-                variant={editId ? "warning" : "danger"}
-                className="w-100"
-                disabled={cargando}
-              >
-                {cargando ? (
-                  <Spinner size="sm" animation="border" />
-                ) : editId ? (
-                  "💾 Guardar cambios"
-                ) : (
-                  "➕ Agregar categoría"
-                )}
-              </Button>
-            </Col>
-          </Row>
-        </Form>
-
-        {/* 🟢 Categorías Activas */}
-        <h5 className="text-light mt-4 mb-2">Categorías Activas</h5>
-        <Table
-          striped
-          bordered
-          hover
-          variant="dark"
-          className="text-center align-middle"
-        >
-          <thead>
-            <tr>
-              <th style={{ width: "10%" }}>ID</th>
-              <th style={{ width: "60%" }}>Nombre</th>
-              <th style={{ width: "30%" }}>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {activasPagina.length === 0 ? (
+        {/* Tabla de Activos */}
+        <h5 className="text-light mt-2 mb-2">Registros Activos</h5>
+        <div className="table-responsive">
+          <Table striped bordered hover variant="dark" className="text-center align-middle">
+            <thead>
               <tr>
-                <td colSpan={3}>No hay categorías activas</td>
+                <th style={{ width: "10%" }}>ID</th>
+                <th style={{ width: tipoVista === "clasificacion" ? "45%" : "70%" }}>Nombre</th>
+                {tipoVista === "clasificacion" && <th style={{ width: "25%" }}>Tipo</th>}
+                <th style={{ width: "20%" }}>Acciones</th>
               </tr>
-            ) : (
-              activasPagina.map((cat) => (
-                <tr key={cat.id_categoria}>
-                  <td>{cat.id_categoria}</td>
-                  <td>{cat.nombre_categoria}</td>
-                  <td>
-                    <Button
-                      size="sm"
-                      variant="outline-warning"
-                      className="me-2"
-                      onClick={() => handleEdit(cat)}
-                    >
-                      ✏️ Editar
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline-danger"
-                      onClick={() => desactivarCategoria(cat.id_categoria)}
-                    >
-                      📴 Desactivar
-                    </Button>
+            </thead>
+            <tbody>
+              {activos.length === 0 ? (
+                <tr>
+                  <td colSpan={tipoVista === "clasificacion" ? 4 : 3}>
+                    No hay registros activos
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </Table>
+              ) : (
+                activos.map((item) => (
+                  <tr key={item.id_categoria || item.id_clasificacion}>
+                    <td>{item.id_categoria || item.id_clasificacion}</td>
+                    <td>{item.nombre_categoria || item.nombre_clasificacion}</td>
+                    {tipoVista === "clasificacion" && <td>{item.tipo || "-"}</td>}
+                    <td>
+                      <Button
+                        size="sm"
+                        variant="outline-warning"
+                        className="me-2"
+                        onClick={() => editar(item)}
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline-danger"
+                        onClick={() =>
+                          desactivar(item.id_categoria || item.id_clasificacion)
+                        }
+                      >
+                        Desactivar
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </Table>
+        </div>
 
-        {/* 🔢 Paginación Activas */}
-        {activas.length > porPagina && (
-          <div className="d-flex justify-content-center align-items-center gap-3 mb-4">
-            <Button
-              variant="outline-light"
-              size="sm"
-              disabled={paginaActiva === 1}
-              onClick={() => setPaginaActiva(paginaActiva - 1)}
-            >
-              ⬅️
-            </Button>
-            <span>
-              Sesión {paginaActiva} de {totalPaginasActivas}
-            </span>
-            <Button
-              variant="outline-light"
-              size="sm"
-              disabled={paginaActiva === totalPaginasActivas}
-              onClick={() => setPaginaActiva(paginaActiva + 1)}
-            >
-              ➡️
-            </Button>
-          </div>
-        )}
-
-        {/* 🔴 Categorías Inactivas */}
-        <h5 className="text-light mt-4 mb-2">Categorías Inactivas</h5>
-        <Table
-          striped
-          bordered
-          hover
-          variant="dark"
-          className="text-center align-middle"
-        >
-          <thead>
-            <tr>
-              <th style={{ width: "10%" }}>ID</th>
-              <th style={{ width: "60%" }}>Nombre</th>
-              <th style={{ width: "30%" }}>Opciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {inactivasPagina.length === 0 ? (
+        {/* Tabla de Inactivos */}
+        <h5 className="text-light mt-4 mb-2">Registros Inactivos</h5>
+        <div className="table-responsive">
+          <Table striped bordered hover variant="dark" className="text-center align-middle">
+            <thead>
               <tr>
-                <td colSpan={3}>No hay categorías inactivas</td>
+                <th style={{ width: "10%" }}>ID</th>
+                <th style={{ width: tipoVista === "clasificacion" ? "45%" : "70%" }}>Nombre</th>
+                {tipoVista === "clasificacion" && <th style={{ width: "25%" }}>Tipo</th>}
+                <th style={{ width: "20%" }}>Opciones</th>
               </tr>
-            ) : (
-              inactivasPagina.map((cat) => (
-                <tr key={cat.id_categoria}>
-                  <td>{cat.id_categoria}</td>
-                  <td>{cat.nombre_categoria}</td>
-                  <td>
-                    <Button
-                      size="sm"
-                      variant="outline-success"
-                      className="me-2"
-                      onClick={() => activarCategoria(cat.id_categoria)}
-                    >
-                      🔄 Activar
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline-danger"
-                      onClick={() => eliminarCategoria(cat.id_categoria)}
-                    >
-                      🗑️ Eliminar
-                    </Button>
+            </thead>
+            <tbody>
+              {inactivos.length === 0 ? (
+                <tr>
+                  <td colSpan={tipoVista === "clasificacion" ? 4 : 3}>
+                    No hay registros inactivos
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </Table>
+              ) : (
+                inactivos.map((item) => (
+                  <tr key={item.id_categoria || item.id_clasificacion}>
+                    <td>{item.id_categoria || item.id_clasificacion}</td>
+                    <td>{item.nombre_categoria || item.nombre_clasificacion}</td>
+                    {tipoVista === "clasificacion" && <td>{item.tipo || "-"}</td>}
+                    <td>
+                      <Button
+                        size="sm"
+                        variant="outline-success"
+                        className="me-2"
+                        onClick={() =>
+                          activar(item.id_categoria || item.id_clasificacion)
+                        }
+                      >
+                        Activar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline-danger"
+                        onClick={() =>
+                          eliminar(item.id_categoria || item.id_clasificacion)
+                        }
+                      >
+                        Eliminar
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </Table>
+        </div>
 
-        {/* 🔢 Paginación Inactivas */}
-        {inactivas.length > porPagina && (
-          <div className="d-flex justify-content-center align-items-center gap-3">
-            <Button
-              variant="outline-light"
-              size="sm"
-              disabled={paginaInactiva === 1}
-              onClick={() => setPaginaInactiva(paginaInactiva - 1)}
-            >
-              ⬅️
-            </Button>
-            <span>
-              Sesión {paginaInactiva} de {totalPaginasInactivas}
-            </span>
-            <Button
-              variant="outline-light"
-              size="sm"
-              disabled={paginaInactiva === totalPaginasInactivas}
-              onClick={() => setPaginaInactiva(paginaInactiva + 1)}
-            >
-              ➡️
-            </Button>
-          </div>
-        )}
+        {/* Modal */}
+        <Modal show={mostrarModal} onHide={() => setMostrarModal(false)} centered>
+          <Modal.Header closeButton className="bg-dark text-white">
+            <Modal.Title>
+              {editId ? "Editar" : "Registrar"}{" "}
+              {tipoVista === "categoria" ? "Categoría" : "Clasificación"}
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="bg-dark text-white">
+            <Form onSubmit={handleSubmit}>
+              {tipoVista === "categoria" ? (
+                <Form.Group className="mb-3">
+                  <Form.Label>Nombre de la Categoría</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="nombre_categoria"
+                    value={formCategoria.nombre_categoria}
+                    onChange={(e) =>
+                      setFormCategoria({
+                        ...formCategoria,
+                        nombre_categoria: e.target.value,
+                      })
+                    }
+                    className="bg-dark text-white border-danger"
+                    required
+                  />
+                </Form.Group>
+              ) : (
+                <>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Nombre de la Clasificación</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="nombre_clasificacion"
+                      value={formClasificacion.nombre_clasificacion}
+                      onChange={(e) =>
+                        setFormClasificacion({
+                          ...formClasificacion,
+                          nombre_clasificacion: e.target.value,
+                        })
+                      }
+                      className="bg-dark text-white border-danger"
+                      required
+                    />
+                  </Form.Group>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Tipo</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="tipo"
+                      value={formClasificacion.tipo}
+                      onChange={(e) =>
+                        setFormClasificacion({
+                          ...formClasificacion,
+                          tipo: e.target.value,
+                        })
+                      }
+                      className="bg-dark text-white border-danger"
+                      required
+                    />
+                  </Form.Group>
+                </>
+              )}
+              <div className="text-center">
+                <Button
+                  type="submit"
+                  variant="danger"
+                  className="fw-bold px-4"
+                  disabled={cargando}
+                >
+                  {cargando ? <Spinner size="sm" animation="border" /> : "Guardar"}
+                </Button>
+              </div>
+            </Form>
+          </Modal.Body>
+        </Modal>
       </Card>
     </Container>
   );

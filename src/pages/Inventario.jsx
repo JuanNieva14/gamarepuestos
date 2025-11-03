@@ -1,191 +1,282 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Container,
-  Card,
   Table,
   Button,
+  Badge,
+  Spinner,
+  Card,
   Modal,
   Form,
-  Alert,
-  Badge,
+  InputGroup,
 } from "react-bootstrap";
+import {
+  PencilFill,
+  ArrowLeftSquareFill,
+  ArrowRightSquareFill,
+  Search,
+} from "react-bootstrap-icons";
+import { obtenerInventario, actualizarStock } from "../services/inventario";
 
 export default function Inventario() {
-  // 🧾 Datos simulados basados en tu tabla real
-  const [inventario, setInventario] = useState([
-    { id_inventario: 1, id_producto: 1, stock_actual: 34, stock_minimo: 8, fecha_actualizacion: "2023-06-03 00:01:27" },
-    { id_inventario: 2, id_producto: 2, stock_actual: 32, stock_minimo: 10, fecha_actualizacion: "2024-12-17 15:22:27" },
-    { id_inventario: 3, id_producto: 3, stock_actual: 98, stock_minimo: 5, fecha_actualizacion: "2025-07-03 21:13:56" },
-    { id_inventario: 4, id_producto: 4, stock_actual: 98, stock_minimo: 5, fecha_actualizacion: "2025-03-19 01:13:39" },
-    { id_inventario: 5, id_producto: 5, stock_actual: 43, stock_minimo: 5, fecha_actualizacion: "2024-05-01 23:32:44" },
-  ]);
-
-  const [mensaje, setMensaje] = useState(null);
+  const [inventario, setInventario] = useState([]);
+  const [filtrado, setFiltrado] = useState([]);
+  const [busqueda, setBusqueda] = useState("");
+  const [cargando, setCargando] = useState(true);
   const [mostrarModal, setMostrarModal] = useState(false);
-  const [registroSeleccionado, setRegistroSeleccionado] = useState(null);
+  const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [nuevoStock, setNuevoStock] = useState("");
+  const [paginaActual, setPaginaActual] = useState(1);
+  const productosPorPagina = 10;
 
-  // 💬 Mostrar mensaje
-  const showMsg = (texto, ms = 2500) => {
-    setMensaje(texto);
-    setTimeout(() => setMensaje(null), ms);
+  useEffect(() => {
+    cargarInventario();
+  }, []);
+
+  useEffect(() => {
+    if (busqueda.length >= 3) {
+      const texto = busqueda.toLowerCase();
+      const resultados = inventario.filter(
+        (p) =>
+          p.Codigo.toLowerCase().includes(texto) ||
+          p.Producto.toLowerCase().includes(texto)
+      );
+      setFiltrado(resultados);
+      setPaginaActual(1);
+    } else {
+      setFiltrado(inventario);
+    }
+  }, [busqueda, inventario]);
+
+  const cargarInventario = async () => {
+    setCargando(true);
+    try {
+      const data = await obtenerInventario();
+      setInventario(data);
+      setFiltrado(data);
+    } catch (error) {
+      console.error("Error al obtener inventario:", error);
+    } finally {
+      setCargando(false);
+    }
   };
 
-  // 🟡 Determinar color del stock
-  const getBadgeColor = (stock, minimo) => {
-    if (stock === 0) return "danger";
-    if (stock <= minimo) return "warning";
-    return "success";
-  };
-
-  // ✏️ Abrir modal
-  const handleEditarStock = (registro) => {
-    setRegistroSeleccionado(registro);
-    setNuevoStock(registro.stock_actual);
+  const abrirModal = (producto) => {
+    setProductoSeleccionado(producto);
+    setNuevoStock(producto.Stock_Actual);
     setMostrarModal(true);
   };
 
-  // 💾 Actualizar stock
-  const handleActualizar = () => {
-    if (nuevoStock === "" || isNaN(nuevoStock) || nuevoStock < 0) {
-      showMsg("❌ Ingrese un valor válido de stock.");
-      return;
-    }
-
-    const actualizado = inventario.map((r) =>
-      r.id_inventario === registroSeleccionado.id_inventario
-        ? {
-            ...r,
-            stock_actual: parseInt(nuevoStock),
-            fecha_actualizacion: new Date()
-              .toISOString()
-              .replace("T", " ")
-              .slice(0, 19),
-          }
-        : r
-    );
-
-    setInventario(actualizado);
+  const cerrarModal = () => {
     setMostrarModal(false);
-    showMsg("✅ Stock actualizado correctamente.");
+    setProductoSeleccionado(null);
+    setNuevoStock("");
+  };
+
+  const guardarCambios = async () => {
+    try {
+      await actualizarStock(productoSeleccionado.Codigo, nuevoStock);
+      cerrarModal();
+      cargarInventario();
+    } catch (error) {
+      alert("Error al actualizar el stock");
+    }
+  };
+
+  // Paginación
+  const indiceInicio = (paginaActual - 1) * productosPorPagina;
+  const indiceFin = indiceInicio + productosPorPagina;
+  const productosPagina = filtrado.slice(indiceInicio, indiceFin);
+  const totalPaginas = Math.ceil(filtrado.length / productosPorPagina);
+
+  const siguientePagina = () => {
+    if (paginaActual < totalPaginas) setPaginaActual(paginaActual + 1);
+  };
+
+  const paginaAnterior = () => {
+    if (paginaActual > 1) setPaginaActual(paginaActual - 1);
   };
 
   return (
-    <Container className="py-4">
-      <Card className="p-4 shadow-lg bg-dark text-light border-0">
-        <h2 className="text-center text-danger mb-4">Inventario General</h2>
+    <Card className="p-4 shadow-lg bg-dark text-white">
+      <h2 className="text-center text-danger mb-4">Inventario General</h2>
 
-        {/* Mensaje */}
-        {mensaje && (
-          <Alert
-            variant={
-              mensaje.startsWith("✅")
-                ? "success"
-                : mensaje.startsWith("❌")
-                ? "danger"
-                : "warning"
-            }
-            className="text-center"
-          >
-            {mensaje}
-          </Alert>
+      {/* Barra de búsqueda */}
+      <div className="mb-4" style={{ maxWidth: "400px", margin: "0 auto" }}>
+        <InputGroup>
+          <InputGroup.Text className="bg-danger border-danger text-white">
+            <Search />
+          </InputGroup.Text>
+          <Form.Control
+            type="text"
+            placeholder="Buscar por código o nombre..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            className="bg-dark text-white border-danger"
+          />
+        </InputGroup>
+        {busqueda.length > 0 && busqueda.length < 3 && (
+          <small className="text-secondary">
+            Escribe al menos 3 letras para buscar...
+          </small>
         )}
+      </div>
 
-        {/* Tabla de inventario */}
-        <Table striped bordered hover variant="dark" className="text-center align-middle">
-          <thead>
-            <tr>
-              <th>ID Inventario</th>
-              <th>ID Producto</th>
-              <th>Stock Actual</th>
-              <th>Stock Mínimo</th>
-              <th>Fecha de Actualización</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {inventario.length === 0 ? (
-              <tr>
-                <td colSpan={7}>No hay registros de inventario.</td>
-              </tr>
-            ) : (
-              inventario.map((r) => (
-                <tr key={r.id_inventario}>
-                  <td>{r.id_inventario}</td>
-                  <td>{r.id_producto}</td>
-                  <td>
-                    <Badge bg={getBadgeColor(r.stock_actual, r.stock_minimo)}>
-                      {r.stock_actual}
-                    </Badge>
-                    {r.stock_actual <= r.stock_minimo && (
-                      <span className="text-warning ms-2">⚠ Bajo stock</span>
-                    )}
-                  </td>
-                  <td>{r.stock_minimo}</td>
-                  <td>{r.fecha_actualizacion}</td>
-                  <td>
-                    {r.stock_actual === 0 ? (
-                      <Badge bg="danger">Agotado</Badge>
-                    ) : r.stock_actual <= r.stock_minimo ? (
-                      <Badge bg="warning">En Pedido</Badge>
-                    ) : (
-                      <Badge bg="success">Activo</Badge>
-                    )}
-                  </td>
-                  <td>
-                    <Button
-                      size="sm"
-                      variant="outline-warning"
-                      onClick={() => handleEditarStock(r)}
-                    >
-                      ✏️ Actualizar Stock
-                    </Button>
-                  </td>
+      {cargando ? (
+        <div className="text-center">
+          <Spinner animation="border" variant="light" />
+          <p className="mt-2">Cargando inventario...</p>
+        </div>
+      ) : (
+        <>
+          <div className="table-responsive">
+            <Table striped bordered hover variant="dark" className="align-middle text-center">
+              <thead style={{ backgroundColor: "#5c0a0a", color: "#fff" }}>
+                <tr>
+                  <th>ID</th>
+                  <th>Código</th>
+                  <th>Producto</th>
+                  <th>Categoría</th>
+                  <th>Precio Venta</th>
+                  <th>Stock Actual</th>
+                  <th>Stock Mínimo</th>
+                  <th>Fecha Actualización</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </Table>
-      </Card>
+              </thead>
+              <tbody>
+                {productosPagina.length > 0 ? (
+                  productosPagina.map((item, index) => {
+                    const estado =
+                      item.Stock_Actual <= item.Stock_Minimo ? (
+                        <Badge bg="danger">Crítico</Badge>
+                      ) : (
+                        <Badge bg="success">Activo</Badge>
+                      );
 
-      {/* 🟡 Modal de actualización */}
-      <Modal
-        show={mostrarModal}
-        onHide={() => setMostrarModal(false)}
-        centered
-      >
-        <Modal.Header closeButton className="bg-dark text-light">
+                    return (
+                      <tr key={index}>
+                        <td>{indiceInicio + index + 1}</td>
+                        <td>{item.Codigo}</td>
+                        <td>{item.Producto}</td>
+                        <td>{item.Categoria}</td>
+                        <td>${item.Precio_Venta.toLocaleString("es-CO")}</td>
+                        <td>
+                          <Badge
+                            bg={
+                              item.Stock_Actual <= item.Stock_Minimo
+                                ? "danger"
+                                : "success"
+                            }
+                          >
+                            {item.Stock_Actual}
+                          </Badge>
+                        </td>
+                        <td>{item.Stock_Minimo}</td>
+                        <td>
+                          {new Date(item.Fecha_Actualizacion).toLocaleString("es-CO")}
+                        </td>
+                        <td>{estado}</td>
+                        <td>
+                          <Button
+                            variant="outline-warning"
+                            size="sm"
+                            className="fw-bold d-flex align-items-center gap-1 mx-auto"
+                            style={{
+                              borderColor: "#ffc107",
+                              color: "#ffff66",
+                              fontWeight: "bold",
+                            }}
+                            onClick={() => abrirModal(item)}
+                          >
+                            <PencilFill style={{ color: "#ff6600" }} />
+                            Editar
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan="10" className="text-center text-muted">
+                      No se encontraron resultados
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </Table>
+          </div>
+
+          {/* Navegación profesional */}
+          {filtrado.length > 10 && (
+            <div
+              className="d-flex justify-content-between align-items-center mt-3"
+              style={{ width: "100%" }}
+            >
+              <Button
+                variant="outline-light"
+                size="sm"
+                onClick={paginaAnterior}
+                disabled={paginaActual === 1}
+              >
+                <ArrowLeftSquareFill size={22} color="#007bff" />
+              </Button>
+
+              <span
+                className="text-center"
+                style={{ flex: 1, fontWeight: "bold" }}
+              >
+                Sesión {paginaActual} de {totalPaginas}
+              </span>
+
+              <Button
+                variant="outline-light"
+                size="sm"
+                onClick={siguientePagina}
+                disabled={paginaActual === totalPaginas}
+              >
+                <ArrowRightSquareFill size={22} color="#007bff" />
+              </Button>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Modal de actualización */}
+      <Modal show={mostrarModal} onHide={cerrarModal} centered>
+        <Modal.Header closeButton className="bg-dark text-white">
           <Modal.Title>Actualizar Stock</Modal.Title>
         </Modal.Header>
-
-        <Modal.Body className="bg-dark text-light">
-          {registroSeleccionado && (
+        <Modal.Body className="bg-dark text-white">
+          {productoSeleccionado && (
             <>
               <p>
-                <strong>ID Producto:</strong> {registroSeleccionado.id_producto}
+                <strong>Producto:</strong> {productoSeleccionado.Producto}
+              </p>
+              <p>
+                <strong>Categoría:</strong> {productoSeleccionado.Categoria}
               </p>
               <Form.Group>
-                <Form.Label>Nuevo valor de stock</Form.Label>
+                <Form.Label>Nuevo Stock</Form.Label>
                 <Form.Control
                   type="number"
                   value={nuevoStock}
                   onChange={(e) => setNuevoStock(e.target.value)}
+                  min="0"
                 />
               </Form.Group>
             </>
           )}
         </Modal.Body>
-
-        <Modal.Footer className="bg-dark">
-          <Button variant="secondary" onClick={() => setMostrarModal(false)}>
+        <Modal.Footer className="bg-dark text-white">
+          <Button variant="secondary" onClick={cerrarModal}>
             Cancelar
           </Button>
-          <Button variant="danger" onClick={handleActualizar}>
-            Guardar cambios
+          <Button variant="warning" onClick={guardarCambios}>
+            Guardar Cambios
           </Button>
         </Modal.Footer>
       </Modal>
-    </Container>
+    </Card>
   );
 }
