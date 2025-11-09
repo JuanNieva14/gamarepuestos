@@ -1,25 +1,15 @@
 import React, { useState, useEffect } from "react";
-import {
-  Container,
-  Card,
-  Table,
-  Form,
-  Row,
-  Col,
-  Button,
-  Badge,
-  Spinner,
-} from "react-bootstrap";
-import { obtenerComprasProveedores } from "../services/compras_proveedores";
+import { Container, Card, Table, Form, Row, Col, Button, Badge, Spinner } from "react-bootstrap";
+import axios from "axios";
 
-export default function ComprasProveedores() {
-  const [comprasOriginal, setComprasOriginal] = useState([]); // todos los datos
-  const [compras, setCompras] = useState([]); // filtrados
+export default function FacturacionPeriodo() {
+  const [facturacion, setFacturacion] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [filtroMes, setFiltroMes] = useState("Todos");
-  const [cargando, setCargando] = useState(true);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState(null);
 
-  // 🔠 Traducción de meses inglés → español
+  // 🗓️ Diccionario de traducción de meses
   const traducirMes = (mesIngles) => {
     const meses = {
       January: "Enero",
@@ -38,59 +28,42 @@ export default function ComprasProveedores() {
     return meses[mesIngles] || mesIngles;
   };
 
-  // 🔁 Cargar datos al iniciar
+  // 📡 Obtener datos del backend
   useEffect(() => {
-    const cargar = async () => {
-      setCargando(true);
-      const res = await obtenerComprasProveedores("", "Todos");
-      if (res.success) {
-        // traducir meses
-        const dataTraducida = res.data.map((item) => ({
-          ...item,
-          mes: traducirMes(item.mes),
+    const cargarDatos = async () => {
+      try {
+        setCargando(true);
+        const res = await axios.get("http://localhost:8001/facturacion_periodo", {
+          params: { busqueda, mes: filtroMes },
+        });
+
+        // 🗓️ Traducir meses antes de mostrarlos
+        const datosTraducidos = (res.data.data || []).map((f) => ({
+          ...f,
+          mes: traducirMes(f.mes),
         }));
-        setComprasOriginal(dataTraducida);
-        setCompras(dataTraducida);
-      } else {
-        setCompras([]);
+
+        setFacturacion(datosTraducidos);
+      } catch (err) {
+        console.error(err);
+        setError("❌ Error al obtener facturación.");
+      } finally {
+        setCargando(false);
       }
-      setCargando(false);
     };
-    cargar();
-  }, []);
-
-  // 🔍 Filtro dinámico global (sin llamar al backend)
-  useEffect(() => {
-    let filtrados = [...comprasOriginal];
-
-    if (filtroMes !== "Todos") {
-      filtrados = filtrados.filter(
-        (c) => c.mes.toLowerCase() === filtroMes.toLowerCase()
-      );
-    }
-
-    if (busqueda.trim() !== "") {
-      filtrados = filtrados.filter((c) =>
-        c.proveedor.toLowerCase().includes(busqueda.toLowerCase())
-      );
-    }
-
-    setCompras(filtrados);
-  }, [busqueda, filtroMes, comprasOriginal]);
+    cargarDatos();
+  }, [busqueda, filtroMes]);
 
   // 🧮 Total general
-  const totalGeneral = compras.reduce(
-    (acc, c) => acc + (Number(c.total) || 0),
-    0
-  );
+  const totalGeneral = facturacion.reduce((acc, f) => acc + f.total, 0);
 
-  // 🧾 Exportar PDF (vista imprimible)
+  // 🧾 Descargar PDF
   const handleDescargarPDF = () => {
     const ventana = window.open("", "_blank");
     ventana.document.write(`
       <html>
         <head>
-          <title>Compras a Proveedores</title>
+          <title>Facturación por Periodo</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 40px; color: #222; }
             h1, h2 { color: #c00; text-align: center; }
@@ -104,25 +77,21 @@ export default function ComprasProveedores() {
         <body>
           <img src="/imagenes/android-chrome-192x192.png" alt="Logo Gama Repuestos">
           <h1>GAMA REPUESTOS QUIBDÓ</h1>
-          <h2>HISTÓRICO DE COMPRAS A PROVEEDORES</h2>
-          <p><strong>Periodo:</strong> ${
-            filtroMes === "Todos" ? "Todos los meses" : filtroMes
-          }</p>
+          <h2>FACTURACIÓN POR PERIODO</h2>
+          <p><strong>Periodo:</strong> ${filtroMes === "Todos" ? "Todos los meses" : filtroMes}</p>
           <table>
-            <tr><th>#</th><th>Proveedor</th><th>Mes</th><th>Facturas</th><th>Total (COP)</th></tr>
-            ${compras
+            <tr><th>#</th><th>Cliente</th><th>Mes</th><th>Facturas</th><th>Total (COP)</th></tr>
+            ${facturacion
               .map(
-                (c, i) =>
-                  `<tr><td>${i + 1}</td><td>${c.proveedor}</td><td>${c.mes}</td><td>${c.facturas}</td><td>$${(
-                    Number(c.total) || 0
-                  ).toLocaleString()}</td></tr>`
+                (f, i) =>
+                  `<tr><td>${i + 1}</td><td>${f.cliente}</td><td>${f.mes}</td><td>${f.facturas}</td><td>$${f.total.toLocaleString()}</td></tr>`
               )
               .join("")}
           </table>
           <h3 style="text-align:right;margin-top:15px;">Total general: $${totalGeneral.toLocaleString()}</h3>
           <div class="footer">
             <p>Documento generado automáticamente por el sistema</p>
-            <p>Gama Repuestos Quibdó</p>
+            <p>Gama Repuestos Quibdó | contacto@gamarepuestos.com</p>
           </div>
         </body>
       </html>
@@ -131,34 +100,23 @@ export default function ComprasProveedores() {
     ventana.print();
   };
 
-  // 🏷️ Etiquetas de estado visual
-  const getBadge = (total) => {
-    const valor = Number(total) || 0;
-    if (valor > 1800000) return <Badge bg="success">Alta</Badge>;
-    if (valor > 1000000) return <Badge bg="warning" text="dark">Media</Badge>;
-    return <Badge bg="secondary">Baja</Badge>;
-  };
-
   return (
     <Container className="py-4">
       <Card className="p-4 bg-dark text-light shadow-lg border-0">
-        <h2 className="text-center text-danger mb-4">Compras a Proveedores</h2>
+        <h2 className="text-center text-danger mb-4">Facturación por Periodo</h2>
 
         {/* 🔍 Filtros */}
-        <Row className="mb-4 justify-content-center">
+        <Row className="mb-4">
           <Col md={4}>
             <Form.Control
               type="text"
-              placeholder="Buscar por proveedor..."
+              placeholder="Buscar cliente por nombre o apellido..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
             />
           </Col>
           <Col md={3}>
-            <Form.Select
-              value={filtroMes}
-              onChange={(e) => setFiltroMes(e.target.value)}
-            >
+            <Form.Select value={filtroMes} onChange={(e) => setFiltroMes(e.target.value)}>
               <option value="Todos">Todos los meses</option>
               <option value="Enero">Enero</option>
               <option value="Febrero">Febrero</option>
@@ -183,23 +141,18 @@ export default function ComprasProveedores() {
 
         {/* 📋 Tabla */}
         {cargando ? (
-          <div className="text-center my-4">
+          <div className="text-center">
             <Spinner animation="border" variant="light" />
-            <p className="mt-2">Cargando compras...</p>
+            <p className="mt-2">Cargando datos...</p>
           </div>
+        ) : error ? (
+          <p className="text-danger text-center">{error}</p>
         ) : (
-          <Table
-            striped
-            bordered
-            hover
-            variant="dark"
-            responsive
-            className="text-center align-middle"
-          >
+          <Table striped bordered hover variant="dark" responsive className="text-center">
             <thead>
               <tr>
                 <th>#</th>
-                <th>Proveedor</th>
+                <th>Cliente</th>
                 <th>Mes</th>
                 <th>Facturas</th>
                 <th>Total (COP)</th>
@@ -207,21 +160,31 @@ export default function ComprasProveedores() {
               </tr>
             </thead>
             <tbody>
-              {compras.length > 0 ? (
-                compras.map((c, i) => (
+              {facturacion.length > 0 ? (
+                facturacion.map((f, i) => (
                   <tr key={i}>
                     <td>{i + 1}</td>
-                    <td>{c.proveedor}</td>
-                    <td>{c.mes}</td>
-                    <td>{c.facturas}</td>
-                    <td>${(Number(c.total) || 0).toLocaleString()}</td>
-                    <td>{getBadge(c.total)}</td>
+                    <td>{f.cliente}</td>
+                    <td>{f.mes}</td>
+                    <td>{f.facturas}</td>
+                    <td>${f.total.toLocaleString()}</td>
+                    <td>
+                      {f.total > 1800000 ? (
+                        <Badge bg="success">Alta</Badge>
+                      ) : f.total > 1000000 ? (
+                        <Badge bg="warning" text="dark">
+                          Media
+                        </Badge>
+                      ) : (
+                        <Badge bg="secondary">Baja</Badge>
+                      )}
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="text-center text-muted">
-                    No se encontraron resultados.
+                  <td colSpan="6" className="text-muted">
+                    No hay resultados para mostrar.
                   </td>
                 </tr>
               )}
@@ -229,13 +192,11 @@ export default function ComprasProveedores() {
           </Table>
         )}
 
-        {/* 🧮 Total general */}
+        {/* 🧮 Resumen total */}
         <div className="mt-4 text-end">
           <h5>
             Total general del periodo:{" "}
-            <span className="text-danger">
-              ${totalGeneral.toLocaleString()}
-            </span>
+            <span className="text-danger">${totalGeneral.toLocaleString()}</span>
           </h5>
         </div>
       </Card>

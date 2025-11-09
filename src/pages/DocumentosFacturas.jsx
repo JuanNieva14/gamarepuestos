@@ -139,6 +139,7 @@ export default function DocumentosFacturas() {
                   <th>Cliente</th>
                   <th>Documento</th>
                   <th>Estado</th>
+                  <th>Acción</th>
                 </tr>
               </thead>
               <tbody>
@@ -152,6 +153,13 @@ export default function DocumentosFacturas() {
                       <td>{f.documento_cliente}</td>
                       <td>{f.estado}</td>
                       <td>
+                        <Button
+                          size="sm"
+                          variant="outline-danger"
+                          onClick={() => verFactura(f)}
+                        >
+                          🖨️ Imprimir
+                        </Button>
                       </td>
                     </tr>
                   ))
@@ -239,7 +247,14 @@ export default function DocumentosFacturas() {
             </>
           )}
         </Modal.Body>
-       
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Cerrar
+          </Button>
+          <Button variant="danger" onClick={handlePrint}>
+            🖨️ Imprimir
+          </Button>
+        </Modal.Footer>
       </Modal>
     </Container>
   );

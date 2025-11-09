@@ -30,7 +30,7 @@ export default function RecuperarContraseña() {
           <p className="slogan">Te ayudaremos a volver a ingresar</p>
         </div>
         <img
-          src="/imagenes/android-chrome-192x192.png"
+          src="/imagenes/logo192x192.png"
           alt="Logo Gama"
           className="forgot-logo mt-3"
         />

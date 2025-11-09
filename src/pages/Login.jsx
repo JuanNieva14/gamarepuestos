@@ -51,7 +51,7 @@ export default function Login() {
         </h2>
         <p>La fuerza del motor está en tus manos</p>
         <div className="logo-section">
-          <img src="/logo.png" alt="Logo Gama" className="logo-img" />
+          <img src="/imagenes/logo192x192.png" alt="Logo Gama" className="logo-img" />
         </div>
       </div>
 
@@ -80,7 +80,7 @@ export default function Login() {
                 name="contrasena"
                 value={formData.contrasena}
                 onChange={handleChange}
-                placeholder="••••••••"
+                placeholder=""
                 required
               />
             </Form.Group>

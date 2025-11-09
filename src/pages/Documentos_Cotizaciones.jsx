@@ -10,46 +10,50 @@ import {
   Row,
   Col,
 } from "react-bootstrap";
-import { obtenerFacturas, obtenerDetalleFactura } from "../services/documentos_facturas";
+import {
+  obtenerCotizaciones,
+  obtenerDetalleCotizacion,
+} from "../services/documento_cotizaciones";
 
-export default function DocumentosFacturas() {
-  const [facturas, setFacturas] = useState([]);
-  const [loading, setLoading] = useState(false);
+export default function ConsultaCotizacion() {
+  const [cotizaciones, setCotizaciones] = useState([]);
   const [detalle, setDetalle] = useState([]);
+  const [cotizacionActual, setCotizacionActual] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [facturaActual, setFacturaActual] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const [paginaActual, setPaginaActual] = useState(1);
   const registrosPorPagina = 10;
+  const [loading, setLoading] = useState(false);
 
-  // 🔄 Cargar lista de facturas
-  const cargarFacturas = async () => {
-    setLoading(true);
-    try {
-      const data = await obtenerFacturas();
-      setFacturas(data);
-    } catch (error) {
-      alert("Error al cargar facturas: " + error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // 🔄 Cargar cotizaciones
   useEffect(() => {
-    cargarFacturas();
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const data = await obtenerCotizaciones();
+        setCotizaciones(data);
+      } catch (error) {
+        alert("Error al cargar cotizaciones: " + error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
   // 🔍 Filtro en vivo
-  const facturasFiltradas = facturas.filter((f) => {
-    const texto = `${f.cliente ?? ""} ${f.documento_cliente ?? ""} ${f.numero_factura ?? ""}`.toLowerCase();
+  const cotizacionesFiltradas = cotizaciones.filter((c) => {
+    const texto = `${c.cliente ?? ""} ${c.documento_cliente ?? ""} ${
+      c.numero_cotizacion ?? ""
+    }`.toLowerCase();
     return texto.includes(busqueda.toLowerCase());
   });
 
   // 🔢 Paginación
-  const totalPaginas = Math.ceil(facturasFiltradas.length / registrosPorPagina);
+  const totalPaginas = Math.ceil(cotizacionesFiltradas.length / registrosPorPagina);
   const inicio = (paginaActual - 1) * registrosPorPagina;
   const fin = inicio + registrosPorPagina;
-  const facturasPaginadas = facturasFiltradas.slice(inicio, fin);
+  const cotizacionesPaginadas = cotizacionesFiltradas.slice(inicio, fin);
 
   const cambiarPagina = (nuevaPagina) => {
     if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas) {
@@ -57,13 +61,13 @@ export default function DocumentosFacturas() {
     }
   };
 
-  // 🧾 Ver detalle de factura
-  const verFactura = async (factura) => {
+  // 🧾 Ver detalle
+  const verCotizacion = async (cotizacion) => {
     try {
-      const data = await obtenerDetalleFactura(factura.id_factura);
+      const data = await obtenerDetalleCotizacion(cotizacion.id_cotizacion);
       setDetalle(data);
-      setFacturaActual({
-        ...factura,
+      setCotizacionActual({
+        ...cotizacion,
         correo_cliente: data[0]?.correo_cliente,
         forma_pago: data[0]?.forma_pago,
         estado: data[0]?.estado,
@@ -76,14 +80,14 @@ export default function DocumentosFacturas() {
     }
   };
 
-  // 🖨️ Imprimir factura
+  // 🖨️ Imprimir cotización
   const handlePrint = () => {
-    const contenido = document.getElementById("recibo-factura").innerHTML;
+    const contenido = document.getElementById("recibo-cotizacion").innerHTML;
     const ventana = window.open("", "_blank");
     ventana.document.write(`
       <html>
         <head>
-          <title>Factura ${facturaActual.numero_factura}</title>
+          <title>Cotización ${cotizacionActual.numero_cotizacion}</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 20px; }
             h2, h4 { text-align: center; }
@@ -103,14 +107,14 @@ export default function DocumentosFacturas() {
   return (
     <Container className="py-4">
       <Card className="p-4 bg-dark text-light shadow-lg border-0">
-        <h2 className="text-center text-danger mb-4">Documentos - Facturas</h2>
+        <h2 className="text-center text-danger mb-4">Consulta de Cotizaciones</h2>
 
         {/* 🔍 Barra de búsqueda */}
         <Row className="mb-3">
           <Col md={6}>
             <Form.Control
               type="text"
-              placeholder="Buscar por nombre, apellido o número de cliente..."
+              placeholder="Buscar por nombre, apellido o documento..."
               value={busqueda}
               onChange={(e) => {
                 setBusqueda(e.target.value);
@@ -119,7 +123,7 @@ export default function DocumentosFacturas() {
             />
           </Col>
           <Col md={6} className="text-md-end text-muted mt-2 mt-md-0">
-            Mostrando {facturasPaginadas.length} de {facturasFiltradas.length} resultados
+            Mostrando {cotizacionesPaginadas.length} de {cotizacionesFiltradas.length} resultados
           </Col>
         </Row>
 
@@ -134,31 +138,39 @@ export default function DocumentosFacturas() {
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Número Factura</th>
+                  <th>Número</th>
                   <th>Fecha</th>
                   <th>Cliente</th>
                   <th>Documento</th>
                   <th>Estado</th>
+                  <th>Acción</th>
                 </tr>
               </thead>
               <tbody>
-                {facturasPaginadas.length > 0 ? (
-                  facturasPaginadas.map((f, i) => (
-                    <tr key={f.id_factura}>
+                {cotizacionesPaginadas.length > 0 ? (
+                  cotizacionesPaginadas.map((c, i) => (
+                    <tr key={c.id_cotizacion}>
                       <td>{inicio + i + 1}</td>
-                      <td>{f.numero_factura}</td>
-                      <td>{f.fecha_factura}</td>
-                      <td>{f.cliente}</td>
-                      <td>{f.documento_cliente}</td>
-                      <td>{f.estado}</td>
+                      <td>{c.numero_cotizacion}</td>
+                      <td>{c.fecha_cotizacion}</td>
+                      <td>{c.cliente}</td>
+                      <td>{c.documento_cliente}</td>
+                      <td>{c.estado}</td>
                       <td>
+                        <Button
+                          size="sm"
+                          variant="outline-danger"
+                          onClick={() => verCotizacion(c)}
+                        >
+                          🖨️ Imprimir
+                        </Button>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="7" className="text-muted">
-                      No se encontraron facturas.
+                    <td colSpan="9" className="text-muted">
+                      No se encontraron cotizaciones.
                     </td>
                   </tr>
                 )}
@@ -196,21 +208,21 @@ export default function DocumentosFacturas() {
       {/* 🧾 Modal de impresión */}
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
         <Modal.Header closeButton>
-          <Modal.Title>Factura #{facturaActual?.numero_factura}</Modal.Title>
+          <Modal.Title>Cotización #{cotizacionActual?.numero_cotizacion}</Modal.Title>
         </Modal.Header>
-        <Modal.Body id="recibo-factura">
-          {facturaActual && (
+        <Modal.Body id="recibo-cotizacion">
+          {cotizacionActual && (
             <>
               <h4 className="text-center">Gama Repuestos Quibdó</h4>
-              <p><strong>Factura electrónica a:</strong> {facturaActual.correo_cliente}</p>
+              <p><strong>Cotización enviada a:</strong> {cotizacionActual.correo_cliente}</p>
               <p>
-                <strong>Emitida por:</strong> {facturaActual.vendedor} ({facturaActual.usuario_vendedor})
+                <strong>Elaborada por:</strong> {cotizacionActual.vendedor} ({cotizacionActual.usuario_vendedor})
               </p>
-              <p><strong>Forma de pago:</strong> {facturaActual.forma_pago}</p>
-              <p><strong>Estado:</strong> {facturaActual.estado}</p>
-              <p><strong>Cliente:</strong> {facturaActual.cliente}</p>
-              <p><strong>Documento:</strong> {facturaActual.documento_cliente}</p>
-              <p><strong>Fecha:</strong> {facturaActual.fecha_factura}</p>
+              <p><strong>Forma de pago:</strong> {cotizacionActual.forma_pago}</p>
+              <p><strong>Estado:</strong> {cotizacionActual.estado}</p>
+              <p><strong>Cliente:</strong> {cotizacionActual.cliente}</p>
+              <p><strong>Documento:</strong> {cotizacionActual.documento_cliente}</p>
+              <p><strong>Fecha:</strong> {cotizacionActual.fecha_cotizacion}</p>
 
               <Table striped bordered hover size="sm" className="text-center mt-3">
                 <thead>
@@ -231,15 +243,34 @@ export default function DocumentosFacturas() {
                     </tr>
                   ))}
                   <tr>
+                    <td colSpan="3"><strong>Subtotal:</strong></td>
+                    <td><strong>{detalle[0]?.subtotal_general}</strong></td>
+                  </tr>
+                  <tr>
+                    <td colSpan="3"><strong>IVA:</strong></td>
+                    <td><strong>{detalle[0]?.iva}</strong></td>
+                  </tr>
+                  <tr>
+                    <td colSpan="3"><strong>Descuento:</strong></td>
+                    <td><strong>{detalle[0]?.descuento}</strong></td>
+                  </tr>
+                  <tr>
                     <td colSpan="3"><strong>Total:</strong></td>
-                    <td><strong>{detalle[0]?.total_factura}</strong></td>
+                    <td><strong>{detalle[0]?.total_general}</strong></td>
                   </tr>
                 </tbody>
               </Table>
             </>
           )}
         </Modal.Body>
-       
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Cerrar
+          </Button>
+          <Button variant="danger" onClick={handlePrint}>
+            🖨️ Imprimir
+          </Button>
+        </Modal.Footer>
       </Modal>
     </Container>
   );

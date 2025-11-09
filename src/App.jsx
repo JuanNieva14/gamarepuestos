@@ -5,6 +5,7 @@ import ProtectedRoute from "./components/Proteccion"; // ✅ ruta protegida
 
 // Páginas
 import Inicio from "./pages/Inicio";
+import CreaccionProveedores from "./pages/Creaccion_Proveedores";
 import Productos from "./pages/Consulta_Productos";
 import Categorias from "./pages/Categorias";
 import Estados from "./pages/Estados";
@@ -14,23 +15,22 @@ import ManualUsuario from "./pages/ManualUsuario";
 import Danos from "./pages/Danos";
 import Personas from "./pages/Personas";
 import FormasPago from "./pages/FormasPago";
-import Pedidos from "./pages/Pedidos";
+import GestionPedidosProveedor from "./pages/GestionPedidosProveedor";
 import Inventario from "./pages/Inventario";
 import VentaProductos from "./pages/VentaProductos";
 import ActualizarStock from "./pages/ActualizarStock";
 import CrearCotizacion from "./pages/CrearCotizacion";
 import Clientes from "./pages/Consulta_Clientes";
-import Proveedores from "./pages/Proveedores";
-import CotizacionesRealizadas from "./pages/CotizacionesRealizadas";
+import Proveedores from "./pages/Consulta_Proveedores";
+import CotizacionesRealizadas from "./pages/Consulta_CotizacionesRealizadas";
 import FacturasEmitidas from "./pages/FacturasEmitidas";
-import Facturas from "./pages/Facturas";
-import Cotizaciones from "./pages/Cotizaciones";
-import PedidosProveedores from "./pages/PedidosProveedores";
-import Comprobantes from "./pages/Comprobantes";
+import Facturas from "./pages/DocumentosFacturas";
+import Cotizaciones from "./pages/Documentos_Cotizaciones";
+import PedidosProveedores from "./pages/Documentos_PedidosProveedores";
 import VentasPeriodo from "./pages/VentasPeriodo";
 import InventarioReporte from "./pages/InventarioReporte";
 import ComprasProveedores from "./pages/ComprasProveedores";
-import FacturacionPeriodo from "./pages/FacturacionPeriodo";
+import FacturacionPeriodo from "./pages/ReporteFacturacionPeriodo";
 import ProductosMasVendidos from "./pages/ProductosMasVendidos";
 import ClientesDestacados from "./pages/ClientesDestacados";
 import ProveedoresFrecuentes from "./pages/ProveedoresFrecuentes";
@@ -43,6 +43,8 @@ import Tutoriales from "./pages/Tutoriales";
 import Register from "./pages/Register";
 import RecuperarContraseña from "./pages/RecuperarContraseña";
 import Login from "./pages/Login";
+
+
 
 export default function App() {
   return (
@@ -121,11 +123,11 @@ export default function App() {
 
         {/* GESTIÓN */}
         <Route
-          path="/pedidos"
+          path="/gestionpedidosproveedor"
           element={
             <ProtectedRoute>
               <Layout>
-                <Pedidos />
+                <GestionPedidosProveedor />
               </Layout>
             </ProtectedRoute>
           }
@@ -140,6 +142,18 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/creaccionproveedores"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <CreaccionProveedores />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/registroproductos"
           element={
@@ -264,16 +278,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/comprobantes"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Comprobantes />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
+        
 
         {/* REPORTES */}
         <Route

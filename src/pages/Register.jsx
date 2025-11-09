@@ -1,24 +1,53 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { registrarCuenta } from "../services/register";
-import { Form, Button, Card, Spinner, Alert } from "react-bootstrap";
+import {
+  Form,
+  Button,
+  Card,
+  Spinner,
+  Alert,
+  Modal,
+} from "react-bootstrap";
 import { useNavigate, Link } from "react-router-dom";
-import "./Register.css"; // 🔹 Archivo CSS personalizado
+import "./Register.css";
 
 export default function Register() {
   const [form, setForm] = useState({
     nombre: "",
     apellido: "",
     numero_documento: "",
-    correo: "",
     direccion: "",
     contrasena: "",
     confirmar: "",
     terminos: false,
   });
 
+  const [usuarioGenerado, setUsuarioGenerado] = useState("");
+  const [correoGenerado, setCorreoGenerado] = useState("");
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState(null);
+  const [mostrarModal, setMostrarModal] = useState(false);
   const navigate = useNavigate();
+
+  // 🔄 Generar usuario y correo automáticamente
+  useEffect(() => {
+    const { nombre, apellido, numero_documento } = form;
+
+    if (nombre && apellido && numero_documento) {
+      const ultimosTres = numero_documento.slice(-3);
+
+      // 👤 Usuario → primera letra + apellido + últimos 3 dígitos
+      const user = (nombre[0] + apellido + ultimosTres).toLowerCase();
+      setUsuarioGenerado(user);
+
+      // 📧 Correo → nombre.apellido + últimos 3 dígitos + @gama.com
+      const correo = `${nombre.toLowerCase()}.${apellido.toLowerCase()}${ultimosTres}@gama.com`;
+      setCorreoGenerado(correo);
+    } else {
+      setUsuarioGenerado("");
+      setCorreoGenerado("");
+    }
+  }, [form.nombre, form.apellido, form.numero_documento]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -44,14 +73,30 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const respuesta = await registrarCuenta(form);
-      setMensaje({ tipo: "success", texto: respuesta.mensaje });
-      setTimeout(() => navigate("/login"), 2000);
+      const datosEnviar = {
+        ...form,
+        correo: correoGenerado, // correo automático
+      };
+
+      const respuesta = await registrarCuenta(datosEnviar);
+
+      // Mostrar modal con credenciales generadas
+      setUsuarioGenerado(respuesta.usuario || usuarioGenerado);
+      setCorreoGenerado(respuesta.correo || correoGenerado);
+      setMostrarModal(true);
     } catch (error) {
-      setMensaje({ tipo: "danger", texto: error.message });
+      setMensaje({
+        tipo: "danger",
+        texto: error.message || "Error al registrar usuario",
+      });
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCerrarModal = () => {
+    setMostrarModal(false);
+    navigate("/login");
   };
 
   return (
@@ -64,7 +109,11 @@ export default function Register() {
         </h2>
         <p>Haz que tu negocio crezca con nosotros</p>
         <div className="logo-section">
-          <img src="/logo.png" alt="Logo Gama" className="logo-img" />
+          <img
+            src="/imagenes/logo192x192.png"
+            alt="Logo Gama"
+            className="logo-img"
+          />
         </div>
       </div>
 
@@ -83,6 +132,7 @@ export default function Register() {
                   required
                 />
               </Form.Group>
+
               <Form.Group className="mb-3 flex-fill">
                 <Form.Label>Apellido</Form.Label>
                 <Form.Control
@@ -94,6 +144,13 @@ export default function Register() {
               </Form.Group>
             </div>
 
+            {/* Usuario generado automáticamente */}
+            {usuarioGenerado && (
+              <p className="text-muted small mb-3">
+                👤 Tu usuario asignado será: <strong>{usuarioGenerado}</strong>
+              </p>
+            )}
+
             <Form.Group className="mb-3">
               <Form.Label>Número de documento</Form.Label>
               <Form.Control
@@ -104,14 +161,17 @@ export default function Register() {
               />
             </Form.Group>
 
+            {/* Correo generado automáticamente */}
             <Form.Group className="mb-3">
-              <Form.Label>Correo electrónico</Form.Label>
+              <Form.Label>
+                Correo electrónico (asignado automáticamente)
+              </Form.Label>
               <Form.Control
                 type="email"
                 name="correo"
-                value={form.correo}
-                onChange={handleChange}
-                required
+                value={correoGenerado}
+                readOnly
+                className="bg-light text-muted"
               />
             </Form.Group>
 
@@ -170,18 +230,50 @@ export default function Register() {
             <Button
               variant="danger"
               type="submit"
-              className="w-100"
+              className="w-100 fw-bold"
               disabled={loading}
             >
-              {loading ? <Spinner size="sm" animation="border" /> : "Crear Cuenta"}
+              {loading ? (
+                <Spinner size="sm" animation="border" />
+              ) : (
+                "Crear Cuenta"
+              )}
             </Button>
 
             <p className="text-center mt-3">
-              ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
+              ¿Ya tienes cuenta?{" "}
+              <Link to="/login" className="text-danger fw-semibold">
+                Inicia sesión
+              </Link>
             </p>
           </Form>
         </Card>
       </div>
+
+      {/* 🧾 Modal de confirmación */}
+      <Modal show={mostrarModal} onHide={handleCerrarModal} centered>
+        <Modal.Header closeButton>
+          <Modal.Title className="text-danger fw-bold">
+            Cuenta creada exitosamente
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p className="mb-2">
+            👤 <strong>Usuario:</strong> {usuarioGenerado}
+          </p>
+          <p>
+            📧 <strong>Correo asignado:</strong> {correoGenerado}
+          </p>
+          <p className="text-muted small">
+            Guarda esta información para poder iniciar sesión más adelante.
+          </p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="danger" onClick={handleCerrarModal}>
+            Aceptar
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

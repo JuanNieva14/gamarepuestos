@@ -19,6 +19,11 @@ export async function loginUsuario(datos) {
       localStorage.setItem("usuario", JSON.stringify(resultado.usuario));
     }
 
+    // Después del login exitoso:
+const user = res.data.usuario; // esto depende de tu backend
+localStorage.setItem("usuario_sesion", JSON.stringify(user));
+
+
     return resultado;
   } catch (error) {
     console.error("Error en login:", error);

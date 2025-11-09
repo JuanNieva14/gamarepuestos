@@ -5,27 +5,27 @@ export default function Tutoriales() {
   const tutoriales = [
     {
       id: 1,
-      titulo: "🧾 Registro de Productos",
+      titulo: "Registro de Productos",
       descripcion: "Aprende cómo registrar y actualizar productos dentro del sistema.",
-      enlace: "https://www.youtube.com/embed/lXATQyK0zqk", // Reemplázalo con tu propio enlace
+      enlace: "", // Reemplázalo con tu propio enlace
     },
     {
       id: 2,
-      titulo: "💰 Ventas y Facturación",
+      titulo: "Ventas y Facturación",
       descripcion: "Guía para registrar ventas, aplicar descuentos y generar facturas en PDF.",
-      enlace: "https://www.youtube.com/embed/ug50zmP9I7s", // Ejemplo
+      enlace: "", // Ejemplo
     },
     {
       id: 3,
-      titulo: "📦 Gestión de Inventario",
+      titulo: "Gestión de Inventario",
       descripcion: "Cómo consultar, actualizar y filtrar el stock de productos.",
-      enlace: "https://www.youtube.com/embed/YbJOTdZBX1g",
+      enlace: "",
     },
     {
       id: 4,
-      titulo: "👥 Usuarios y Roles",
+      titulo: "Usuarios y Roles",
       descripcion: "Tutorial sobre la creación de usuarios, asignación de roles y permisos.",
-      enlace: "https://www.youtube.com/embed/tgbNymZ7vqY",
+      enlace: "",
     },
   ];
 

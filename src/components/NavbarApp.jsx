@@ -1,27 +1,44 @@
-import React from "react";
-import { Navbar, Nav, NavDropdown, Container } from "react-bootstrap";
+import React, { useEffect, useState } from "react";
+import { Navbar, Nav, NavDropdown, Container, Dropdown } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { PersonCircle } from "react-bootstrap-icons";
 import "./NavbarApp.css";
-
 
 export default function NavbarApp() {
   const navigate = useNavigate();
+  const [usuario, setUsuario] = useState(null);
+
+  useEffect(() => {
+    const user = localStorage.getItem("usuario");
+    if (user) {
+      try {
+        setUsuario(JSON.parse(user)); // Si fue guardado como objeto
+      } catch {
+        setUsuario({ nombre: user }); // fallback si fue texto plano
+      }
+    }
+  }, []);
 
   const handleNavigation = (path) => {
     navigate(path);
   };
 
-  return (
+  const handleLogout = () => {
+    localStorage.removeItem("usuario");
+    navigate("/login");
+  };
 
+  return (
     <Navbar expand="lg" className="navbar-dark-custom shadow-sm" variant="dark">
       <Container>
+        {/* Marca */}
         <Navbar.Brand onClick={() => handleNavigation("/")} style={{ cursor: "pointer" }}>
           Gama Repuestos Quibdó
         </Navbar.Brand>
+
         <Navbar.Toggle aria-controls="main-navbar" />
         <Navbar.Collapse id="main-navbar">
           <Nav className="me-auto">
-
             {/* INICIO */}
             <Nav.Link onClick={() => handleNavigation("/inicio")}>Inicio</Nav.Link>
 
@@ -46,11 +63,14 @@ export default function NavbarApp() {
 
             {/* GESTIÓN */}
             <NavDropdown title="Gestión" id="gestion-nav-dropdown">
-              <NavDropdown.Item onClick={() => handleNavigation("/pedidos")}>
+              <NavDropdown.Item onClick={() => handleNavigation("/gestionpedidosproveedor")}>
                 Pedidos a proveedores
               </NavDropdown.Item>
               <NavDropdown.Item onClick={() => handleNavigation("/inventario")}>
                 Inventario
+              </NavDropdown.Item>
+                <NavDropdown.Item onClick={() => handleNavigation("/creaccionproveedores")}>
+                Creaccion Proveedores
               </NavDropdown.Item>
               <NavDropdown.Item onClick={() => handleNavigation("/registroproductos")}>
                 Registro de productos
@@ -96,15 +116,12 @@ export default function NavbarApp() {
               <NavDropdown.Item onClick={() => handleNavigation("/pedidosproveedores")}>
                 Pedidos a proveedores
               </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/comprobantes")}>
-                Comprobantes de entradas/salidas
-              </NavDropdown.Item>
             </NavDropdown>
 
             {/* REPORTES */}
             <NavDropdown title="Reportes" id="reportes-nav-dropdown">
               <NavDropdown.Item onClick={() => handleNavigation("/ventasperiodo")}>
-                Ventas por día/semana/mes
+                Ventas por mes
               </NavDropdown.Item>
               <NavDropdown.Item onClick={() => handleNavigation("/inventarioreporte")}>
                 Inventario
@@ -161,9 +178,45 @@ export default function NavbarApp() {
                 Acerca del sistema
               </NavDropdown.Item>
             </NavDropdown>
+          </Nav>
 
-            {/* CERRAR SESIÓN */}
-            <Nav.Link onClick={() => handleNavigation("/login")}>Cerrar sesión</Nav.Link>
+          {/* 👤 PERFIL DEL USUARIO */}
+          <Nav className="ms-auto">
+            {usuario ? (
+              <Dropdown align="end">
+                <Dropdown.Toggle
+                  variant="outline"
+                  className="d-flex align-items-center fw-semibold"
+                  id="dropdown-usuario"
+                >
+                  <PersonCircle className="me-2 fs-5" />
+                  {usuario.usuario || "Usuario"}
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu className="shadow-lg">
+                  <Dropdown.ItemText className="text-riht">
+                    <div className="fw-bold text-white">
+                      {usuario.nombre} {usuario.apellido}
+                    </div>
+                    <div className="text-white small">
+                      {usuario.documento || "Sin documento"}
+                    </div>
+                    <div className="badge bg-danger mt-2">
+                      {usuario.rol || "Sin rol"}</div>
+                  </Dropdown.ItemText>
+
+                  <Dropdown.Divider />
+                  <Dropdown.Item
+                    onClick={handleLogout}
+                    className="text-center text-danger fw-bold"
+                  >
+                    Cerrar sesión
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+            ) : (
+              <Nav.Link onClick={() => handleNavigation("/login")}>Iniciar sesión</Nav.Link>
+            )}
           </Nav>
         </Navbar.Collapse>
       </Container>
