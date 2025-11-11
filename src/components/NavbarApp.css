@@ -1,42 +1,287 @@
+Quiero que lo adaptes a este que llevamos
 
-
-
+/* ====== ESTILO GENERAL DEL NAVBAR ====== */
 .navbar-dark-custom {
-  background-color: #000 !important;
-  border-bottom: 2px solid #7a0000;
+  background: linear-gradient(180deg, #0a0a0a 0%, #1a0000 100%);
+  border-bottom: 3px solid #a00000; /* 🔴 Línea separadora restaurada */
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+  font-size: 1.05rem;
+  letter-spacing: 0.4px;
 }
 
-.navbar-dark-custom .navbar-brand {
+/* ====== LINKS Y DROPDOWN ====== */
+.nav-animated .nav-link,
+.navbar-dark-custom .dropdown-toggle {
+  color: #ffffff !important; /* ⚪ Blanco puro */
+  font-weight: 700; /* 🧱 Negrilla */
+  margin: 0 10px;
+  transition: all 0.25s ease-in-out;
+}
+
+.nav-animated .nav-link:hover,
+.navbar-dark-custom .dropdown-toggle:hover {
+  color: #ff4040 !important;
+  transform: scale(1.05);
+}
+
+/* 🔴 LINK ACTIVO - RUTA ACTUAL */
+.nav-animated .nav-link.active,
+.nav-animated .dropdown-toggle.active {
+  color: #ff4040 !important;
+  font-weight: 700;
+}
+
+/* ====== DROPDOWN MENU ====== */
+.dropdown-menu {
+  background-color: #111111 !important; /* o el color que quieras */
+  border: 1px solid #a00000; /* línea decorativa opcional */
+  color: #fff !important;
+  border-radius: 10px;
+  padding: 6px 0;
+  min-width: 220px;
+  margin-top: 10px !important; /* 👇 Alineado con el borde inferior */
+}
+
+.dropdown-menu .dropdown-item {
+  color: #ffffff;
+  padding: 8px 15px;
+  font-weight: 500;
+  transition: all 0.25s ease-in-out;
+}
+
+.dropdown-menu .dropdown-item:hover {
+  background-color: #a00000;
+  color: #000000 !important;
+}
+
+/* 🔴 ITEM ACTIVO (submenú seleccionado) */
+.dropdown-menu .dropdown-item.active {
+  background-color: transparent;
+  color: #ff4040 !important;
+  font-weight: 700;
+}
+
+/* 🔴 MANTENER MENÚ PADRE EN ROJO si una ruta hija está activa */
+.navbar-dark-custom .nav-item.dropdown.active > .nav-link,
+.navbar-dark-custom .nav-item.dropdown.active > .dropdown-toggle,
+.navbar-dark-custom .nav-item.dropdown.show > .nav-link,
+.navbar-dark-custom .nav-item.dropdown.show > .dropdown-toggle {
+  color: #ff4040 !important;
+  font-weight: 700;
+}
+
+/* 🔴 Mantener color rojo también si hay una subruta hija activa */
+.navbar-dark-custom .nav-item.dropdown .dropdown-item.active {
+  color: #ff4040 !important;
+}
+
+/* ====== TOGGLE DE USUARIO ====== */
+.custom-toggle {
+  background-color: #a00000;
+  color: #ffffff !important;
+  border-radius: 25px;
+  padding: 6px 12px;
+  border: none;
+  font-weight: 600;
+  transition: all 0.3s ease-in-out;
+}
+
+.custom-toggle:hover {
+  background-color: #d32f2f;
+  transform: scale(1.05);
+}
+
+/* ====== MENÚ DE USUARIO ====== */
+.user-menu {
+  text-align: center;
+  background-color: #d40000 !important; /* ⚪ Fondo blanco limpio */
+  color: #1a1a1a !important;
+  border-radius: 18px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  margin-top: 15px; /* 👇 Separación del borde del navbar */
+}
+
+.user-menu .text-secondary {
+  color: #555 !important;
+}
+
+.role-badge {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 4px 12px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  box-shadow: 0 0 6px rgba(255, 0, 0, 0.5);
+}
+
+.logout-btn {
+  transition: all 0.2s ease-in-out;
+  font-weight: 700;
+}
+
+.logout-btn:hover {
+  color: #ff4040 !important;
+  transform: scale(1.05);
+}
+
+/* ====== RESPONSIVO ====== */
+@media (max-width: 991px) {
+  .nav-animated .nav-link {
+    margin: 4px 0;
+  }
+
+  .navbar-dark-custom {
+    font-size: 1rem;
+  }
+
+  .dropdown-menu {
+    min-width: 100%;
+  }
+}
+
+/* ====== CORRECCIÓN DE ESTILO PARA INICIO Y ADMINISTRACIÓN + ====== */
+.navbar-dark-custom .nav-link {
+  color: #ffffff !important;
+  font-weight: 700;
+  transition: all 0.25s ease-in-out;
+}
+
+.navbar-dark-custom .nav-link:hover {
+  color: #ff4040 !important;
+  transform: scale(1.05);
+}
+
+/* 🔴 Enlace activo (Inicio o Administración + seleccionados) */
+.navbar-dark-custom .nav-link.active {
+  color: #ff4040 !important;
+  font-weight: 700;
+}
+
+/* ====== ADMINISTRACIÓN + ====== */
+.admin-plus-link {
+  color: #ffffff !important;
+  font-weight: 700;
+  margin: 0 10px;
+  transition: color 0.25s ease-in-out, transform 0.25s ease-in-out;
+}
+
+.admin-plus-link:hover {
+  color: #ff4040 !important;
+  transform: scale(1.05);
+}
+
+/* 🔴 Mantener color rojo si está activa */
+.admin-plus-link.active {
+  color: #ff4040 !important;
+  font-weight: 700;
+}
+
+/* ====== CORRECCIÓN DE ESTILO PARA INICIO Y ADMINISTRACIÓN + ====== */
+.navbar-dark-custom .nav-link {
+  color: #ffffff !important;
+  font-weight: 700;
+  transition: all 0.25s ease-in-out;
+}
+
+.navbar-dark-custom .nav-link:hover {
+  color: #ff4040 !important;
+  transform: scale(1.05);
+}
+
+.navbar-dark-custom .nav-link.active {
+  color: #ff4040 !important;
+  font-weight: 700;
+}
+
+/* ====== COLOR DIFERENCIADO PARA LOS ROLES ====== */
+.role-badge.admin {
+  background-color: #ff4040; /* Administrador */
+  color: #fff;
+  box-shadow: 0 0 8px rgba(255, 0, 0, 0.6);
+}
+
+.role-badge.vendedor {
+  background-color: #007bff; /* Vendedor */
+  color: #fff;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+}
+
+/* ====== SUBRUTA ACTIVA (mantiene color en menú padre) ====== */
+.navbar-dark-custom .nav-item.dropdown.show > .nav-link,
+.navbar-dark-custom .nav-item.dropdown.show > .dropdown-toggle,
+.navbar-dark-custom .nav-item.dropdown.active > .nav-link,
+.navbar-dark-custom .nav-item.dropdown.active > .dropdown-toggle {
+  color: #ff4040 !important;
+  font-weight: 700;
+}
+
+/* ====== AJUSTES VISUALES Y DE ROLES ====== */
+
+/* Centrar menú del usuario respecto al botón */
+.dropdown-menu.user-menu {
+  left: 50% !important;
+  transform: translateX(-50%) translateY(10px) !important;
+  background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%) !important; /* Degradado gris oscuro metálico */
+  color: #ffffff !important;
+  border-radius: 18px;
+  border: 1px solid #a00000;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6);
+  padding: 15px;
+  min-width: 270px;
+  text-align: center;
+  transition: all 0.25s ease-in-out;
+}
+
+/* Animación sutil al aparecer */
+.dropdown-menu.user-menu.show {
+  animation: fadeInUserMenu 0.25s ease-in-out forwards;
+}
+
+@keyframes fadeInUserMenu {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(0px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(10px);
+  }
+}
+
+/* Texto interno más visible */
+.user-menu .fw-bold {
+  color: #ffffff !important;
+}
+
+.user-menu .text-secondary {
+  color: #cccccc !important;
+}
+
+/* Roles bien diferenciados */
+.role-badge.admin {
+  background-color: #c30000 !important; /* Administrador */
   color: #fff !important;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  box-shadow: 0 0 8px rgba(255, 0, 0, 0.6);
 }
 
-.navbar-dark-custom .navbar-brand:hover {
-  color: #ff1e1e !important;
-}
-
-.navbar-dark-custom .nav-link,
-.navbar-dark-custom .dropdown-toggle {
+.role-badge.vendedor {
+  background-color: #005eff !important; /* Vendedor */
   color: #fff !important;
-  font-weight: 500;
+  font-weight: 700;
+  box-shadow: 0 0 8px rgba(0, 94, 255, 0.6);
 }
 
-.navbar-dark-custom .nav-link:hover,
-.navbar-dark-custom .dropdown-item:hover {
-  color: #ff1e1e !important;
+/* Hover del botón de cierre */
+.logout-btn:hover {
+  color: #ff4040 !important;
+  transform: scale(1.05);
 }
 
-.navbar-dark-custom .dropdown-menu {
-  background-color: #111;
-  border: 1px solid #7a0000;
-}
-
-.navbar-dark-custom .dropdown-item {
-  color: #fff;
-}
-
-.navbar-dark-custom .dropdown-item:hover {
-  background-color: #7a0000;
-  color: #fff;
+/* Mantener la línea divisoria del navbar */
+.navbar-dark-custom {
+  border-bottom: 3px solid #a00000 !important;
 }

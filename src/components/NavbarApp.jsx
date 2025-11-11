@@ -1,51 +1,81 @@
 import React, { useEffect, useState } from "react";
 import { Navbar, Nav, NavDropdown, Container, Dropdown } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { PersonCircle } from "react-bootstrap-icons";
 import "./NavbarApp.css";
 
 export default function NavbarApp() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [usuario, setUsuario] = useState(null);
+  const [rol, setRol] = useState(null);
 
   useEffect(() => {
-    const user = localStorage.getItem("usuario");
-    if (user) {
+    const userData = localStorage.getItem("usuario");
+    if (userData) {
       try {
-        setUsuario(JSON.parse(user)); // Si fue guardado como objeto
+        const parsed = JSON.parse(userData);
+        setUsuario(parsed);
+        setRol(parsed.rol?.toUpperCase());
       } catch {
-        setUsuario({ nombre: user }); // fallback si fue texto plano
+        console.error("Error al parsear usuario guardado.");
       }
     }
   }, []);
 
-  const handleNavigation = (path) => {
-    navigate(path);
-  };
-
+  const handleNavigation = (path) => navigate(path);
   const handleLogout = () => {
     localStorage.removeItem("usuario");
     navigate("/login");
   };
 
+  const isActive = (path) => location.pathname === path;
+
   return (
-    <Navbar expand="lg" className="navbar-dark-custom shadow-sm" variant="dark">
+    <Navbar
+      expand="lg"
+      className="navbar-dark-custom shadow-sm border-bottom border-danger"
+      variant="dark"
+    >
       <Container>
         {/* Marca */}
-        <Navbar.Brand onClick={() => handleNavigation("/")} style={{ cursor: "pointer" }}>
-          Gama Repuestos Quibdó
+        <Navbar.Brand
+          onClick={() => handleNavigation("/inicio")}
+          style={{ cursor: "pointer" }}
+          className="fw-bold text-white"
+        >
+                 
+       <img src="/imagenes/logo192x192.png" 
+       width={50}
+       />
+
+      
         </Navbar.Brand>
 
         <Navbar.Toggle aria-controls="main-navbar" />
         <Navbar.Collapse id="main-navbar">
-          <Nav className="me-auto">
+          <Nav className="me-auto align-items-center nav-animated">
             {/* INICIO */}
-            <Nav.Link onClick={() => handleNavigation("/inicio")}>Inicio</Nav.Link>
+            <Nav.Link
+              onClick={() => handleNavigation("/inicio")}
+              className={isActive("/inicio") ? "active" : ""}
+            >
+              Inicio
+            </Nav.Link>
 
             {/* BÁSICO */}
-            <NavDropdown title="Básico" id="basic-nav-dropdown">
+            <NavDropdown
+              title="Básico"
+              id="basic-nav-dropdown"
+              className={
+                location.pathname.startsWith("/categorias") ||
+                location.pathname.startsWith("/danos")
+                  ? "active"
+                  : ""
+              }
+            >
               <NavDropdown.Item onClick={() => handleNavigation("/categorias")}>
-                Categoría de repuestos
+                Categorías
               </NavDropdown.Item>
               <NavDropdown.Item onClick={() => handleNavigation("/danos")}>
                 Repuestos dañados
@@ -69,8 +99,8 @@ export default function NavbarApp() {
               <NavDropdown.Item onClick={() => handleNavigation("/inventario")}>
                 Inventario
               </NavDropdown.Item>
-                <NavDropdown.Item onClick={() => handleNavigation("/creaccionproveedores")}>
-                Creaccion Proveedores
+              <NavDropdown.Item onClick={() => handleNavigation("/creaccionproveedores")}>
+                Creación de proveedores
               </NavDropdown.Item>
               <NavDropdown.Item onClick={() => handleNavigation("/registroproductos")}>
                 Registro de productos
@@ -88,81 +118,14 @@ export default function NavbarApp() {
 
             {/* CONSULTAS */}
             <NavDropdown title="Consultas" id="consultas-nav-dropdown">
-              <NavDropdown.Item onClick={() => handleNavigation("/productos")}>
-                Productos
-              </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/clientes")}>
-                Clientes
-              </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/proveedores")}>
-                Proveedores
-              </NavDropdown.Item>
+              <NavDropdown.Item onClick={() => handleNavigation("/productos")}>Productos</NavDropdown.Item>
+              <NavDropdown.Item onClick={() => handleNavigation("/clientes")}>Clientes</NavDropdown.Item>
+              <NavDropdown.Item onClick={() => handleNavigation("/proveedores")}>Proveedores</NavDropdown.Item>
               <NavDropdown.Item onClick={() => handleNavigation("/cotizacionesrealizadas")}>
                 Cotizaciones realizadas
               </NavDropdown.Item>
               <NavDropdown.Item onClick={() => handleNavigation("/facturasemitidas")}>
                 Facturas emitidas
-              </NavDropdown.Item>
-            </NavDropdown>
-
-            {/* DOCUMENTOS */}
-            <NavDropdown title="Documentos" id="documentos-nav-dropdown">
-              <NavDropdown.Item onClick={() => handleNavigation("/facturas")}>
-                Facturas
-              </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/cotizaciones")}>
-                Cotizaciones
-              </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/pedidosproveedores")}>
-                Pedidos a proveedores
-              </NavDropdown.Item>
-            </NavDropdown>
-
-            {/* REPORTES */}
-            <NavDropdown title="Reportes" id="reportes-nav-dropdown">
-              <NavDropdown.Item onClick={() => handleNavigation("/ventasperiodo")}>
-                Ventas por mes
-              </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/inventarioreporte")}>
-                Inventario
-              </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/comprasproveedores")}>
-                Compras a proveedores
-              </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/facturacionperiodo")}>
-                Facturación por periodo
-              </NavDropdown.Item>
-            </NavDropdown>
-
-            {/* ESTADÍSTICAS */}
-            <NavDropdown title="Estadísticas" id="estadisticas-nav-dropdown">
-              <NavDropdown.Item onClick={() => handleNavigation("/productosmasvendidos")}>
-                Productos más vendidos
-              </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/clientesdestacados")}>
-                Clientes destacados
-              </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/proveedoresfrecuentes")}>
-                Proveedores frecuentes
-              </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/graficasventas")}>
-                Gráficas comparativas de ventas
-              </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/proyecciondemanda")}>
-                Proyección de demanda
-              </NavDropdown.Item>
-            </NavDropdown>
-
-            {/* ADMINISTRACIÓN */}
-            <NavDropdown title="Administración" id="admin-nav-dropdown">
-              <NavDropdown.Item onClick={() => handleNavigation("/usuarios")}>
-                Usuarios y roles
-              </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/permisos")}>
-                Permisos por rol
-              </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => handleNavigation("/configuracionempresa")}>
-                Configuración de la empresa
               </NavDropdown.Item>
             </NavDropdown>
 
@@ -178,37 +141,51 @@ export default function NavbarApp() {
                 Acerca del sistema
               </NavDropdown.Item>
             </NavDropdown>
+
+            {/* ADMINISTRACIÓN + (ENLACE DIRECTO) */}
+            <Nav.Link
+              onClick={() => handleNavigation("/admin")}
+              className={`admin-plus-link ${isActive("/admin") ? "active" : ""}`}
+            >
+              Administración +
+            </Nav.Link>
           </Nav>
 
-          {/* 👤 PERFIL DEL USUARIO */}
+          {/* PERFIL DEL USUARIO */}
           <Nav className="ms-auto">
             {usuario ? (
               <Dropdown align="end">
                 <Dropdown.Toggle
                   variant="outline"
-                  className="d-flex align-items-center fw-semibold"
+                  className="d-flex align-items-center fw-semibold text-white custom-toggle"
                   id="dropdown-usuario"
                 >
                   <PersonCircle className="me-2 fs-5" />
                   {usuario.usuario || "Usuario"}
                 </Dropdown.Toggle>
 
-                <Dropdown.Menu className="shadow-lg">
-                  <Dropdown.ItemText className="text-riht">
-                    <div className="fw-bold text-white">
+                <Dropdown.Menu className="user-menu p-3">
+                  <div className="text-center">
+                    <div className="fw-bold fs-5">
                       {usuario.nombre} {usuario.apellido}
                     </div>
-                    <div className="text-white small">
-                      {usuario.documento || "Sin documento"}
+                    <div className="text-secondary small">{usuario.correo}</div>
+                    <div className="text-secondary small mb-2">
+                      Documento: {usuario.numero_documento || "N/A"}
                     </div>
-                    <div className="badge bg-danger mt-2">
-                      {usuario.rol || "Sin rol"}</div>
-                  </Dropdown.ItemText>
+                    <div
+                      className={`role-badge ${
+                        usuario.rol?.toUpperCase() === "ADMINISTRADOR" ? "admin" : "vendedor"
+                      }`}
+                    >
+                      {usuario.rol?.charAt(0).toUpperCase() + usuario.rol?.slice(1).toLowerCase()}
+                    </div>
+                  </div>
 
                   <Dropdown.Divider />
                   <Dropdown.Item
                     onClick={handleLogout}
-                    className="text-center text-danger fw-bold"
+                    className="text-center logout-btn text-danger fw-bold"
                   >
                     Cerrar sesión
                   </Dropdown.Item>

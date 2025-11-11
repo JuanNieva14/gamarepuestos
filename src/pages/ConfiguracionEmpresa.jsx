@@ -8,7 +8,7 @@ export default function ConfiguracionEmpresa() {
     direccion: "Cra 10 #12-34, Quibdó, Chocó",
     correo: "contacto@gamarepuestos.com",
     telefono: "+57 312 345 6789",
-    logo: "/imagenes/android-chrome-192x192.png",
+    logo: "",
   });
 
   const [editando, setEditando] = useState(false);

@@ -1,0 +1,91 @@
+.admin-navbar-container {
+  position: relative;
+}
+
+.sidebar-admin {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 60px;
+  background: linear-gradient(180deg, #0a0a0a 0%, #1a0000 100%);
+  border-right: 2px solid #a00000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between; /* 🔹 distribuye íconos arriba y abajo */
+  padding: 40px 0; /* 🔹 más espacio arriba y abajo */
+  gap: 20px;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  border-radius: 0 20px 20px 0;
+}
+
+/* Iconos */
+.icon-container {
+  color: white;
+  padding: 12px;
+  border-radius: 12px;
+  transition: all 0.25s ease-in-out;
+  cursor: pointer;
+}
+
+.icon-container:hover {
+  background-color: #a00000;
+  transform: scale(1.1);
+}
+
+.icon-container.active {
+  background-color: #ff4040;
+  color: black;
+}
+
+.logout-icon {
+  margin-top: auto;
+  margin-bottom: 20px;
+  background-color: #a00000;
+}
+
+.logout-icon:hover {
+  background-color: #ff4040;
+  transform: scale(1.1);
+}
+
+/* Submenús */
+.submenu {
+  position: absolute;
+  left: 60px; /* distancia respecto a la barra */
+  background-color: #111;
+  border: 1px solid #a00000;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  padding: 8px 0;
+  min-width: 220px;
+  z-index: 10;
+}
+
+.submenu div {
+  padding: 6px 10px;
+  color: white;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.submenu div:hover {
+  background-color: #a00000;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+

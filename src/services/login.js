@@ -1,4 +1,3 @@
-
 // services/login.js
 export async function loginUsuario(datos) {
   try {
@@ -8,21 +7,14 @@ export async function loginUsuario(datos) {
       body: JSON.stringify(datos),
     });
 
-    if (!respuesta.ok) {
-      throw new Error("Credenciales incorrectas");
-    }
+    if (!respuesta.ok) throw new Error("Credenciales incorrectas");
 
     const resultado = await respuesta.json();
 
-    // ✅ Guardar el usuario correctamente en localStorage
+    // ✅ Guarda solo el objeto del usuario
     if (resultado.usuario) {
       localStorage.setItem("usuario", JSON.stringify(resultado.usuario));
     }
-
-    // Después del login exitoso:
-const user = res.data.usuario; // esto depende de tu backend
-localStorage.setItem("usuario_sesion", JSON.stringify(user));
-
 
     return resultado;
   } catch (error) {

@@ -14,7 +14,7 @@ export default function ActualizarStock() {
   const API_URL = "http://localhost:8001/stock";
   const API_PRODUCTOS = "http://localhost:8001/productos";
 
-  // 🎨 Estilos personalizados del menú desplegable
+  // Estilos personalizados del menú desplegable
   const selectStyles = {
     control: (base, state) => ({
       ...base,
@@ -43,10 +43,10 @@ export default function ActualizarStock() {
     option: (base, state) => ({
       ...base,
       backgroundColor: state.isSelected
-        ? "#dc3545" // 🔴 Color de fondo al seleccionar
+        ? "#dc3545" // Color de fondo al seleccionar
         : state.isFocused
-        ? "#66171a" // 🔴 Color al pasar el mouse
-        : "#212529", // 🔴 Fondo normal
+        ? "#66171a" // Color al pasar el mouse
+        : "#212529", // Fondo normal
       color: state.isSelected ? "white" : "white",
       cursor: "pointer",
     }),
@@ -56,7 +56,7 @@ export default function ActualizarStock() {
     }),
   };
 
-  // 🔄 Cargar todos los productos una vez
+  // Cargar todos los productos una vez
   const cargarProductos = async () => {
     try {
       const res = await axios.get(API_PRODUCTOS);
@@ -75,7 +75,7 @@ export default function ActualizarStock() {
     cargarProductos();
   }, []);
 
-  // 🧩 Cuando se selecciona un producto
+  // Cuando se selecciona un producto
   const handleProductoChange = async (opt) => {
     if (!opt) {
       setProductoSeleccionado(null);
@@ -90,16 +90,16 @@ export default function ActualizarStock() {
         setMensaje("");
       } else {
         setProductoSeleccionado(null);
-        setMensaje("⚠️ No se encontró el producto");
+        setMensaje("No se encontró el producto");
       }
     } catch (e) {
-      setMensaje("❌ Error al buscar producto");
+      setMensaje("Error al buscar producto");
     } finally {
       setCargando(false);
     }
   };
 
-  // 🧮 Actualizar el stock
+  // Actualizar el stock
   const actualizarStock = async () => {
     if (!productoSeleccionado || !nuevoStock) {
       setMensaje("⚠️ Selecciona un producto e ingresa una cantidad válida");
@@ -121,7 +121,7 @@ export default function ActualizarStock() {
       });
       setNuevoStock("");
     } catch (e) {
-      setMensaje("❌ Error al actualizar stock");
+      setMensaje("Error al actualizar stock");
       setTipoMsg("danger");
     } finally {
       setCargando(false);
@@ -140,7 +140,7 @@ export default function ActualizarStock() {
         )}
 
         <Form>
-          {/* 🔍 Buscar producto */}
+          {/* Buscar producto */}
           <Form.Group className="mb-3">
             <Form.Label>Buscar Producto</Form.Label>
             <Select

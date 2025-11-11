@@ -12,7 +12,7 @@ export default function Layout({ children }) {
         <Container fluid className="py-4">
           {children}
         </Container>
-      </main>
+      </main> 
 
       <footer className="layout-footer text-center text-light py-3">
         <p className="mb-0">

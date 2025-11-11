@@ -1,0 +1,21 @@
+.admin-layout {
+  display: flex;
+  height: 100vh;
+  background: linear-gradient(180deg, #0d0000 0%, #300000 100%);
+}
+
+.admin-content {
+  flex-grow: 1;
+  padding: 40px;
+  overflow-y: auto;
+  color: white;
+}
+
+.admin-content-container {
+  padding: 60px 40px; /* 🔹 arriba/abajo | laterales */
+  min-height: 100vh;
+  margin-left: 70px; /* 🔹 espacio del sidebar */
+  background: linear-gradient(180deg, #0b0b0b 0%, #1a0000 100%);
+  color: #fff;
+  transition: padding 0.3s ease;
+}

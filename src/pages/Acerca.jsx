@@ -34,17 +34,17 @@ export default function Acerca() {
 
             <hr className="border-secondary" />
 
-            <h5 className="text-warning">📦 Versión del Sistema:</h5>
+            <h5 className="text-warning">Versión del Sistema:</h5>
             <p>v1.0.0 (Enero 2025)</p>
 
-            <h5 className="text-warning">👨‍💻 Desarrolladores:</h5>
+            <h5 className="text-warning">Desarrolladores:</h5>
             <ul>
               <li>Juan Sebastian Nieva Gonzalez – Desarrollo Backend e Integración MySQL</li>
               <li>Juan Carlos Mosquera Marin    – Desarrollo Backend e Integración MySQL</li>
               <li>Rosa Milena Gamboa Mena       – Desarrollo Backend e Integración MySQL</li>
             </ul>
 
-            <h5 className="text-warning">📧 Contacto de Soporte:</h5>
+            <h5 className="text-warning">Contacto de Soporte:</h5>
             <p>
               Correo:{" "}
               <a

@@ -1,9 +1,11 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
-import ProtectedRoute from "./components/Proteccion"; // ✅ ruta protegida
+import ProtectedRoute from "./components/Proteccion";
+import RutaProtegidaRol from "./components/RutaProtegidaRol";
+import PanelAdministracion from "./pages/PanelAdministrativo";
 
-// Páginas
+// 📄 Páginas
 import Inicio from "./pages/Inicio";
 import CreaccionProveedores from "./pages/Creaccion_Proveedores";
 import Productos from "./pages/Consulta_Productos";
@@ -24,18 +26,17 @@ import Clientes from "./pages/Consulta_Clientes";
 import Proveedores from "./pages/Consulta_Proveedores";
 import CotizacionesRealizadas from "./pages/Consulta_CotizacionesRealizadas";
 import FacturasEmitidas from "./pages/FacturasEmitidas";
-import Facturas from "./pages/DocumentosFacturas";
-import Cotizaciones from "./pages/Documentos_Cotizaciones";
-import PedidosProveedores from "./pages/Documentos_PedidosProveedores";
-import VentasPeriodo from "./pages/VentasPeriodo";
-import InventarioReporte from "./pages/InventarioReporte";
-import ComprasProveedores from "./pages/ComprasProveedores";
+
+import VentasPeriodo from "./pages/ReporteVentasPeriodo";
+import InventarioReporte from "./pages/ReporteInventario";
+import ComprasProveedores from "./pages/ReporteComprasProveedores";
 import FacturacionPeriodo from "./pages/ReporteFacturacionPeriodo";
-import ProductosMasVendidos from "./pages/ProductosMasVendidos";
-import ClientesDestacados from "./pages/ClientesDestacados";
-import ProveedoresFrecuentes from "./pages/ProveedoresFrecuentes";
-import GraficasVentas from "./pages/GraficasVentas";
-import ProyeccionDemanda from "./pages/ProyeccionDemanda";
+import ProductosMasVendidos from "./pages/EstadisticaProductosMasVendidos";
+import ClientesDestacados from "./pages/EstadisticaClientesDestacados";
+import ProveedoresFrecuentes from "./pages/EstadisticaProveedoresFrecuentes";
+import GraficasVentas from "./pages/EstadisticaGraficasVentas";
+import ProyeccionDemanda from "./pages/EstadisticaProyeccionDemanda";
+
 import Usuarios from "./pages/Usuarios";
 import Permisos from "./pages/Permisos";
 import ConfiguracionEmpresa from "./pages/ConfiguracionEmpresa";
@@ -43,20 +44,24 @@ import Tutoriales from "./pages/Tutoriales";
 import Register from "./pages/Register";
 import RecuperarContraseña from "./pages/RecuperarContraseña";
 import Login from "./pages/Login";
+import AdminInicio from "./pages/AdminInicio";
 
-
+// 🔴 Documentos (para el panel admin)
+import Documentos_Facturas from "./pages/DocumentosFacturas";
+import Documentos_Cotizaciones from "./pages/Documentos_Cotizaciones";
+import Documentos_PedidosProveedores from "./pages/Documentos_PedidosProveedores";
 
 export default function App() {
   return (
     <Router>
       <Routes>
-        {/* ✅ RUTAS PÚBLICAS */}
-        <Route path="/" element={<Login />} />           {/* ← ahora el login es la raíz */}
-        <Route path="/login" element={<Login />} />      {/* opcional, para acceso directo */}
+        {/* 🔓 RUTAS PÚBLICAS */}
+        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/recuperarcontraseña" element={<RecuperarContraseña />} />
 
-        {/* 🔒 RUTAS PROTEGIDAS */}
+        {/* 🔒 RUTA GENERAL PROTEGIDA */}
         <Route
           path="/inicio"
           element={
@@ -68,60 +73,39 @@ export default function App() {
           }
         />
 
+        {/* 🧱 MÓDULOS BÁSICOS */}
+        {[
+          { path: "/categorias", element: <Categorias /> },
+          { path: "/danos", element: <Danos /> },
+          { path: "/personas", element: <Personas /> },
+          { path: "/formaspago", element: <FormasPago /> },
+          { path: "/estados", element: <Estados /> },
+          { path: "/productos", element: <Productos /> },
+          { path: "/clientes", element: <Clientes /> },
+          { path: "/proveedores", element: <Proveedores /> },
+          { path: "/creaccionproveedores", element: <CreaccionProveedores /> },
+          { path: "/registroproductos", element: <RegistroProductos /> },
+          { path: "/ventaproductos", element: <VentaProductos /> },
+          { path: "/actualizarstock", element: <ActualizarStock /> },
+          { path: "/crearcotizacion", element: <CrearCotizacion /> },
+          { path: "/cotizacionesrealizadas", element: <CotizacionesRealizadas /> },
+          { path: "/facturasemitidas", element: <FacturasEmitidas /> },
+          { path: "/manualusuario", element: <ManualUsuario /> },
+          { path: "/tutoriales", element: <Tutoriales /> },
+          { path: "/acerca", element: <Acerca /> },
+        ].map((r, i) => (
+          <Route
+            key={`basico-${i}`}
+            path={r.path}
+            element={
+              <ProtectedRoute>
+                <Layout>{r.element}</Layout>
+              </ProtectedRoute>
+            }
+          />
+        ))}
 
-        {/* BÁSICO */}
-        <Route
-          path="/categorias"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Categorias />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/danos"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Danos />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/personas"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Personas />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/formaspago"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <FormasPago />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/estados"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Estados />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* GESTIÓN */}
+        {/* 📦 GESTIÓN */}
         <Route
           path="/gestionpedidosproveedor"
           element={
@@ -132,6 +116,8 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* 🏷️ INVENTARIO */}
         <Route
           path="/inventario"
           element={
@@ -143,300 +129,43 @@ export default function App() {
           }
         />
 
+        {/* ⚙️ PANEL ADMINISTRATIVO CON RUTAS INTERNAS */}
         <Route
-          path="/creaccionproveedores"
+          path="/admin/*"
           element={
-            <ProtectedRoute>
-              <Layout>
-                <CreaccionProveedores />
-              </Layout>
-            </ProtectedRoute>
+            <RutaProtegidaRol rolesPermitidos={["ADMINISTRADOR"]}>
+              <PanelAdministracion />
+            </RutaProtegidaRol>
           }
-        />
+          
+        > <Route path="inicio" element={<AdminInicio />} />  {/* 🏠 NUEVO INICIO */}
+          {/* 📂 DOCUMENTOS */}
+          <Route path="facturas" element={< Documentos_Facturas/>} />
+          <Route path="cotizaciones" element={<Documentos_Cotizaciones />} />
+          <Route path="pedidosproveedores" element={<Documentos_PedidosProveedores />} />
 
-        <Route
-          path="/registroproductos"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <RegistroProductos />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/ventaproductos"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <VentaProductos />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/actualizarstock"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <ActualizarStock />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/crearcotizacion"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <CrearCotizacion />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
+          {/* 📊 REPORTES */}
+          <Route path="ventasperiodo" element={<VentasPeriodo />} />
+          <Route path="inventarioreporte" element={<InventarioReporte />} />
+          <Route path="comprasproveedores" element={<ComprasProveedores />} />
+          <Route path="facturacionperiodo" element={<FacturacionPeriodo />} />
 
-        {/* CONSULTAS */}
-        <Route
-          path="/productos"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Productos />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/clientes"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Clientes />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/proveedores"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Proveedores />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/cotizacionesrealizadas"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <CotizacionesRealizadas />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/facturasemitidas"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <FacturasEmitidas />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
+          {/* 📈 ESTADÍSTICAS */}
+          <Route path="productosmasvendidos" element={<ProductosMasVendidos />} />
+          <Route path="clientesdestacados" element={<ClientesDestacados />} />
+          <Route path="proveedoresfrecuentes" element={<ProveedoresFrecuentes />} />
+          <Route path="graficasventas" element={<GraficasVentas />} />
+          <Route path="proyecciondemanda" element={<ProyeccionDemanda />} />
 
-        {/* DOCUMENTOS */}
-        <Route
-          path="/facturas"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Facturas />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/cotizaciones"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Cotizaciones />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/pedidosproveedores"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <PedidosProveedores />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        
+          {/* ⚙️ CONFIGURACIÓN */}
+          <Route path="configuracionempresa" element={<ConfiguracionEmpresa />} />
 
-        {/* REPORTES */}
-        <Route
-          path="/ventasperiodo"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <VentasPeriodo />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/inventarioreporte"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <InventarioReporte />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/comprasproveedores"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <ComprasProveedores />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/facturacionperiodo"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <FacturacionPeriodo />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
+          {/* Ruta por defecto del panel */}
+          <Route index element={<Navigate to="inicio" replace />} />
+        </Route>
 
-        {/* ESTADÍSTICAS */}
-        <Route
-          path="/productosmasvendidos"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <ProductosMasVendidos />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/clientesdestacados"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <ClientesDestacados />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/proveedoresfrecuentes"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <ProveedoresFrecuentes />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/graficasventas"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <GraficasVentas />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/proyecciondemanda"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <ProyeccionDemanda />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ADMINISTRACIÓN */}
-        <Route
-          path="/usuarios"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Usuarios />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/permisos"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Permisos />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/configuracionempresa"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <ConfiguracionEmpresa />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* AYUDA */}
-        <Route
-          path="/manualusuario"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <ManualUsuario />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/tutoriales"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Tutoriales />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/acerca"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Acerca />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
+        {/* 🔁 Redirección general */}
+        <Route path="*" element={<Navigate to="/inicio" replace />} />
       </Routes>
     </Router>
   );

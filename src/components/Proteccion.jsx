@@ -1,14 +1,14 @@
-
+// components/Proteccion.jsx
 import { Navigate } from "react-router-dom";
 
 export default function Proteccion({ children }) {
-  const isLoggedIn = localStorage.getItem("isLoggedIn");
+  const usuario = localStorage.getItem("usuario");
 
-  // Si no está logueado, redirige al login
-  if (!isLoggedIn) {
+  // Si no existe usuario en localStorage, redirige al login
+  if (!usuario) {
     return <Navigate to="/login" replace />;
   }
 
-  // Si está logueado, muestra la página normalmente
+  // Si está logueado, renderiza el contenido
   return children;
 }
