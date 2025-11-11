@@ -1,30 +1,27 @@
+import axios from "axios";
+
 const API_URL = "http://localhost:8001/pedidos_proveedores";
 
-export async function getPedidos() {
-  const res = await fetch(`${API_URL}/`);
-  return await res.json();
-}
+// 🔹 Listar todos los pedidos
+export const obtenerPedidos = async () => {
+  const res = await axios.get(API_URL);
+  return res.data;
+};
 
-export async function getSelectProveedores() {
-  const res = await fetch(`${API_URL}/proveedores_select`);
-  return await res.json();
-}
+// 🔹 Crear nuevo pedido
+export const crearPedido = async (pedido) => {
+  const res = await axios.post(API_URL, pedido);
+  return res.data;
+};
 
-export async function getSelectVendedores() {
-  const res = await fetch(`${API_URL}/vendedores_select`);
-  return await res.json();
-}
+// 🔹 Actualizar pedido
+export const editarPedido = async (id, pedido) => {
+  const res = await axios.put(`${API_URL}/${id}`, pedido);
+  return res.data;
+};
 
-export async function getSelectEstados() {
-  const res = await fetch(`${API_URL}/estados_select`);
-  return await res.json();
-}
-
-export async function crearPedido(data) {
-  const res = await fetch(`${API_URL}/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  return await res.json();
-}
+// 🔹 Eliminar pedido
+export const eliminarPedido = async (id) => {
+  const res = await axios.delete(`${API_URL}/eliminar/${id}`);
+  return res.data;
+};

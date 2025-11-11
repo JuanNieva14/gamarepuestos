@@ -170,9 +170,7 @@ export default function NavbarApp() {
                       {usuario.nombre} {usuario.apellido}
                     </div>
                     <div className="text-secondary small">{usuario.correo}</div>
-                    <div className="text-secondary small mb-2">
-                      Documento: {usuario.numero_documento || "N/A"}
-                    </div>
+                    <br />
                     <div
                       className={`role-badge ${
                         usuario.rol?.toUpperCase() === "ADMINISTRADOR" ? "admin" : "vendedor"

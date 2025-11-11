@@ -44,7 +44,6 @@ export default function ConfiguracionEmpresa() {
               alt="Logo Empresa"
               rounded
               fluid
-              className="border border-light p-2"
             />
             {editando && (
               <Form.Group className="mt-3">

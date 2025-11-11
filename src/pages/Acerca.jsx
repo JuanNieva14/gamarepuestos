@@ -8,11 +8,12 @@ export default function Acerca() {
         <Row className="align-items-center">
           <Col md={4} className="text-center mb-3 mb-md-0">
             <Image
-              src="/imagenes/android-chrome-192x192.png"
+             src="/imagenes/logo192x192.png"
+         
+         
               alt="Logo Gama Repuestos"
               roundedCircle
               fluid
-              className="border border-danger p-2 bg-light"
               style={{ width: "180px", height: "180px" }}
             />
           </Col>
@@ -57,10 +58,10 @@ export default function Acerca() {
             <p>
               Teléfono:{" "}
               <a
-                href="tel:+573123456789"
+                href="tel:+573105098959"
                 className="text-danger text-decoration-none"
               >
-                +57 312 345 6789
+                +57 3105098959
               </a>
             </p>
 

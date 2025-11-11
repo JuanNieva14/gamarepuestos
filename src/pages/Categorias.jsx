@@ -235,7 +235,6 @@ export default function CategoriasClasificaciones() {
               <tr>
                 <th style={{ width: "10%" }}>ID</th>
                 <th style={{ width: tipoVista === "clasificacion" ? "45%" : "70%" }}>Nombre</th>
-                {tipoVista === "clasificacion" && <th style={{ width: "25%" }}>Tipo</th>}
                 <th style={{ width: "20%" }}>Acciones</th>
               </tr>
             </thead>
@@ -250,8 +249,7 @@ export default function CategoriasClasificaciones() {
                 activos.map((item) => (
                   <tr key={item.id_categoria || item.id_clasificacion}>
                     <td>{item.id_categoria || item.id_clasificacion}</td>
-                    <td>{item.nombre_categoria || item.nombre_clasificacion}</td>
-                    {tipoVista === "clasificacion" && <td>{item.tipo || "-"}</td>}
+                    <td>{item.nombre_categoria || item.nombre_clasificacion}</td> 
                     <td>
                       <Button
                         size="sm"
@@ -286,7 +284,6 @@ export default function CategoriasClasificaciones() {
               <tr>
                 <th style={{ width: "10%" }}>ID</th>
                 <th style={{ width: tipoVista === "clasificacion" ? "45%" : "70%" }}>Nombre</th>
-                {tipoVista === "clasificacion" && <th style={{ width: "25%" }}>Tipo</th>}
                 <th style={{ width: "20%" }}>Opciones</th>
               </tr>
             </thead>
@@ -302,7 +299,6 @@ export default function CategoriasClasificaciones() {
                   <tr key={item.id_categoria || item.id_clasificacion}>
                     <td>{item.id_categoria || item.id_clasificacion}</td>
                     <td>{item.nombre_categoria || item.nombre_clasificacion}</td>
-                    {tipoVista === "clasificacion" && <td>{item.tipo || "-"}</td>}
                     <td>
                       <Button
                         size="sm"
